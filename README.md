@@ -1,6 +1,6 @@
 # brigada-auto-testing
 
-Repositorio para automatizar pruebas E2E del proyecto `webCMS` usando Playwright.
+Repositorio para automatizar pruebas E2E del proyecto webCMS usando Playwright.
 
 ## Requisitos
 
@@ -15,23 +15,42 @@ Repositorio para automatizar pruebas E2E del proyecto `webCMS` usando Playwright
 npm install
 ```
 
-2. Instala navegadores de Playwright:
+1. Instala navegadores de Playwright:
 
 ```bash
 npm run install:browsers
 ```
 
-3. Crea tu archivo de entorno:
+1. Crea tu archivo de entorno:
 
 ```bash
 cp .env.example .env
 ```
 
-4. Verifica que `.env` apunte a la carpeta de `webCMS` correcta en `E2E_WEB_SERVER_CWD`.
+1. Para probar contra servidores desplegados, usa los valores remotos de `.env.example`.
 
 ## Ejecutar pruebas
 
-Playwright levantara automaticamente `webCMS` con el comando configurado en `.env`.
+Por defecto, este repo esta configurado para correr contra:
+
+- Frontend: <https://web-cms-git-dev-brigadadigitals-projects.vercel.app/>
+- Backend: opcional via `API_BASE_URL` en `.env`.
+
+Con esa configuracion (`E2E_DISABLE_WEBSERVER=true`), Playwright no levanta webCMS localmente.
+
+`API_BASE_URL` es opcional. Si webCMS ya esta conectado internamente a su backend en el entorno objetivo, puedes no definirla.
+
+La prueba de login usa credenciales opcionales en `.env`:
+
+- `E2E_LOGIN_EMAIL`
+- `E2E_LOGIN_PASSWORD`
+- `E2E_LOGIN_EMAIL_ROLE_1` + `E2E_LOGIN_PASSWORD_ROLE_1`
+- `E2E_LOGIN_EMAIL_ROLE_2` + `E2E_LOGIN_PASSWORD_ROLE_2`
+- `E2E_LOGIN_EMAIL_ROLE_3` + `E2E_LOGIN_PASSWORD_ROLE_3`
+
+Puedes definir tantos roles como necesites usando el patron `E2E_LOGIN_EMAIL_ROLE_N` / `E2E_LOGIN_PASSWORD_ROLE_N`.
+
+Si no defines ningun par de credenciales valido, los tests de login se omiten automaticamente.
 
 - Modo normal:
 
@@ -57,19 +76,24 @@ npm run test:e2e:headed
 npm run test:e2e:debug
 ```
 
+### Opcion local (si quieres levantar webCMS desde Playwright)
+
+Si prefieres correr contra una instancia local, ajusta en `.env`:
+
+- `E2E_BASE_URL=http://127.0.0.1:3100`
+- `E2E_DISABLE_WEBSERVER=false`
+- `E2E_WEB_SERVER_CWD=../webCMS`
+- `E2E_WEB_SERVER_COMMAND=npm run dev -- --port 3100`
+
 ## CI con GitHub Actions
 
 Se incluye el workflow [playwright.yml](.github/workflows/playwright.yml) para correr E2E en cada push/PR a `main` o `master`.
 
-- Hace checkout de este repo y de `brigadadigitalmorena/webCMS`.
-- Instala dependencias en ambos proyectos.
-- Levanta `webCMS` y ejecuta Playwright.
+- Ejecuta pruebas contra los servidores desplegados definidos en variables de entorno del job.
 - Publica artefactos con reporte y resultados.
-
-Si el repositorio `webCMS` es privado, agrega el secret `WEBCMS_REPO_TOKEN` con un token que tenga permisos de lectura.
 
 ## Estructura inicial
 
 - `playwright.config.ts`: configuracion global del runner.
-- `tests/e2e/smoke.spec.ts`: smoke tests de redireccion y login de `webCMS`.
-- `.env.example`: variables para levantar y probar `webCMS` desde este repo.
+- `tests/e2e/smoke.spec.ts`: smoke tests de redireccion y login de webCMS.
+- `.env.example`: variables para ejecutar en remoto o local.

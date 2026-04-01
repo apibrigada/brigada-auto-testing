@@ -18,43 +18,28 @@ jobs:
   e2e:
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    env:
+      E2E_BASE_URL: https://web-cms-git-dev-brigadadigitals-projects.vercel.app/
+      E2E_DISABLE_WEBSERVER: "true"
 
     steps:
       - name: Checkout brigada-auto-testing
         uses: actions/checkout@v4
-
-      - name: Checkout webCMS
-        uses: actions/checkout@v4
-        with:
-          repository: brigadadigitalmorena/webCMS
-          path: webCMS
-          token: ${{ secrets.WEBCMS_REPO_TOKEN || github.token }}
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: npm
-          cache-dependency-path: |
-            package-lock.json
-            webCMS/package-lock.json
+          cache-dependency-path: package-lock.json
 
       - name: Install dependencies (testing repo)
         run: npm ci
-
-      - name: Install dependencies (webCMS)
-        run: npm ci
-        working-directory: webCMS
 
       - name: Install Playwright browsers
         run: npx playwright install --with-deps chromium
 
       - name: Run E2E tests
-        env:
-          E2E_BASE_URL: http://127.0.0.1:3100
-          E2E_WEB_SERVER_CWD: ./webCMS
-          E2E_WEB_SERVER_COMMAND: npm run dev -- --port 3100
-          E2E_DISABLE_WEBSERVER: "false"
         run: npm run test:e2e
 
       - name: Upload Playwright report

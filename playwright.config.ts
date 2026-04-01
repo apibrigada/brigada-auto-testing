@@ -5,7 +5,6 @@ import path from 'path';
 dotenv.config();
 
 const baseURL = process.env.E2E_BASE_URL ?? 'http://127.0.0.1:3100';
-const apiBaseURL = process.env.API_BASE_URL ?? 'http://localhost:8000';
 const webServerCommand =
   process.env.E2E_WEB_SERVER_COMMAND ?? 'npm run dev -- --port 3100';
 const webServerCwd =
@@ -44,6 +43,6 @@ export default defineConfig({
         timeout: 120 * 1000
       },
   metadata: {
-    apiBaseURL
+    apiBaseURL: process.env.API_BASE_URL
   }
 });
