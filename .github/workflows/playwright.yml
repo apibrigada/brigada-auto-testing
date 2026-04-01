@@ -30,6 +30,7 @@ jobs:
       E2E_LOGIN_PASSWORD_ROLE_2: ${{ secrets.E2E_LOGIN_PASSWORD_ROLE_2 }}
       E2E_LOGIN_EMAIL_ROLE_3: ${{ secrets.E2E_LOGIN_EMAIL_ROLE_3 }}
       E2E_LOGIN_PASSWORD_ROLE_3: ${{ secrets.E2E_LOGIN_PASSWORD_ROLE_3 }}
+      E2E_NEW_IMG_URL_1: ${{ vars.E2E_NEW_IMG_URL_1 }}
 
     steps:
       - name: Checkout brigada-auto-testing

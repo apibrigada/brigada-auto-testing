@@ -47,6 +47,7 @@ La prueba de login usa credenciales opcionales en `.env`:
 - `E2E_LOGIN_EMAIL_ROLE_1` + `E2E_LOGIN_PASSWORD_ROLE_1`
 - `E2E_LOGIN_EMAIL_ROLE_2` + `E2E_LOGIN_PASSWORD_ROLE_2`
 - `E2E_LOGIN_EMAIL_ROLE_3` + `E2E_LOGIN_PASSWORD_ROLE_3`
+- `E2E_NEW_IMG_URL_1` (opcional, cambia foto de perfil para rol 1)
 
 Puedes definir tantos roles como necesites usando el patron `E2E_LOGIN_EMAIL_ROLE_N` / `E2E_LOGIN_PASSWORD_ROLE_N`.
 
@@ -95,6 +96,7 @@ Se incluye el workflow [playwright.yml](.github/workflows/playwright.yml) para c
 - `E2E_LOGIN_EMAIL_ROLE_1`, `E2E_LOGIN_PASSWORD_ROLE_1`
 - `E2E_LOGIN_EMAIL_ROLE_2`, `E2E_LOGIN_PASSWORD_ROLE_2`
 - `E2E_LOGIN_EMAIL_ROLE_3`, `E2E_LOGIN_PASSWORD_ROLE_3`
+- Toma `E2E_NEW_IMG_URL_1` desde GitHub Variables para la prueba de cambio de foto del rol 1.
 - Publica artefactos con reporte y resultados.
 
 Ademas, el workflow despliega el reporte HTML de Playwright en GitHub Pages (eventos push/manual; no en pull_request).
@@ -108,5 +110,5 @@ Para habilitarlo en el repositorio:
 ## Estructura inicial
 
 - `playwright.config.ts`: configuracion global del runner.
-- `tests/e2e/smoke.spec.ts`: smoke tests de redireccion y login de webCMS.
+- `tests/e2e/smoke.spec.ts`: smoke tests de redireccion, login, dashboard, area de configuracion y cambio de foto de rol 1.
 - `.env.example`: variables para ejecutar en remoto o local.

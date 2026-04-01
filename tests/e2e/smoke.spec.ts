@@ -6,6 +6,8 @@ type LoginCredential = {
   label: string;
   email: string;
   password: string;
+  roleNumber?: number;
+  newImageUrl?: string;
 };
 
 function getLoginCredentials(): LoginCredential[] {
@@ -38,7 +40,9 @@ function getLoginCredentials(): LoginCredential[] {
     credentials.push({
       label: `rol_${roleNumber}`,
       email,
-      password
+      password,
+      roleNumber,
+      newImageUrl: process.env[`E2E_NEW_IMG_URL_${roleNumber}`]
     });
   }
 
@@ -46,6 +50,22 @@ function getLoginCredentials(): LoginCredential[] {
 }
 
 async function loginAndValidateDashboard(page: Page, credential: LoginCredential) {
+  await loginWithCredential(page, credential);
+
+  if (new URL(page.url()).pathname !== '/dashboard') {
+    await page.goto('/dashboard');
+    await expect(page).toHaveURL(/\/dashboard$/);
+  }
+
+  await expect(page.getByText('Total de Usuarios')).toBeVisible({ timeout: dashboardStatsTimeoutMs });
+  await expect(page.getByText('Estado del Sistema')).toBeVisible({ timeout: dashboardStatsTimeoutMs });
+
+  await expect(page.locator('p.text-3xl.font-bold span.animate-pulse')).toHaveCount(0, {
+    timeout: dashboardStatsTimeoutMs
+  });
+}
+
+async function loginWithCredential(page: Page, credential: LoginCredential) {
   await page.goto('/login');
 
   await expect(page.locator('#email')).toBeVisible();
@@ -69,18 +89,82 @@ async function loginAndValidateDashboard(page: Page, credential: LoginCredential
 
   await expect(page).toHaveURL(/\/dashboard(?:\/.*)?$/);
   await page.waitForLoadState('domcontentloaded');
+}
 
-  if (new URL(page.url()).pathname !== '/dashboard') {
-    await page.goto('/dashboard');
-    await expect(page).toHaveURL(/\/dashboard$/);
+async function validateSettingsArea(page: Page) {
+  await page.goto('/dashboard/settings');
+  await expect(page).toHaveURL(/\/dashboard\/settings$/);
+
+  await expect(page.getByRole('heading', { name: 'Configuración' })).toBeVisible();
+  await expect(page.getByText('Administra tu perfil, contraseña y preferencias del sistema')).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Perfil' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Contraseña' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Preferencias' })).toBeVisible();
+}
+
+function getImageFileName(contentType: string): string {
+  if (contentType.includes('jpeg') || contentType.includes('jpg')) return 'avatar.jpg';
+  if (contentType.includes('webp')) return 'avatar.webp';
+  if (contentType.includes('gif')) return 'avatar.gif';
+  return 'avatar.png';
+}
+
+async function updateProfilePhotoFromUrl(page: Page, imageUrl: string) {
+  const response = await page.request.get(imageUrl, { timeout: 30000 });
+  expect(response.ok(), `No se pudo descargar la imagen: ${imageUrl}`).toBeTruthy();
+
+  const contentTypeHeader = response.headers()['content-type'] || 'image/png';
+  const contentType = contentTypeHeader.split(';')[0].trim().toLowerCase();
+  const body = await response.body();
+
+  await page.goto('/dashboard/settings');
+  await expect(page).toHaveURL(/\/dashboard\/settings$/);
+
+  const avatarInput = page.locator('input[type="file"][accept*="image/jpeg"]');
+  await expect(avatarInput).toBeAttached();
+
+  await avatarInput.setInputFiles({
+    name: getImageFileName(contentType),
+    mimeType: contentType,
+    buffer: body
+  });
+
+  const avatarResponsePromise = page
+    .waitForResponse((resp) => resp.url().includes('/api/backend/users/me/avatar'), { timeout: 30000 })
+    .catch(() => null);
+  const profileResponsePromise = page
+    .waitForResponse((resp) => resp.url().includes('/api/backend/users/me') && resp.request().method() === 'PATCH', {
+      timeout: 30000
+    })
+    .catch(() => null);
+
+  await page.getByRole('button', { name: 'Guardar cambios' }).click();
+
+  const successMessage = page.getByText('Perfil actualizado exitosamente');
+  const errorMessage = page.getByText('Error al actualizar el perfil');
+
+  await Promise.race([
+    successMessage.waitFor({ state: 'visible', timeout: 30000 }),
+    errorMessage.waitFor({ state: 'visible', timeout: 30000 })
+  ]);
+
+  if (await errorMessage.isVisible()) {
+    const [avatarResponse, profileResponse] = await Promise.all([avatarResponsePromise, profileResponsePromise]);
+
+    let apiDetail = '';
+    if (avatarResponse) {
+      const avatarBody = await avatarResponse.text();
+      apiDetail += ` avatar(status=${avatarResponse.status()} body=${avatarBody.slice(0, 240)})`;
+    }
+    if (profileResponse) {
+      const profileBody = await profileResponse.text();
+      apiDetail += ` profile(status=${profileResponse.status()} body=${profileBody.slice(0, 240)})`;
+    }
+
+    throw new Error(`No se pudo actualizar la foto de perfil.${apiDetail || ' Sin detalle de respuesta API.'}`);
   }
 
-  await expect(page.getByText('Total de Usuarios')).toBeVisible({ timeout: dashboardStatsTimeoutMs });
-  await expect(page.getByText('Estado del Sistema')).toBeVisible({ timeout: dashboardStatsTimeoutMs });
-
-  await expect(page.locator('p.text-3xl.font-bold span.animate-pulse')).toHaveCount(0, {
-    timeout: dashboardStatsTimeoutMs
-  });
+  await expect(successMessage).toBeVisible();
 }
 
 const loginCredentials = getLoginCredentials();
@@ -108,5 +192,19 @@ test.describe('webCMS smoke', () => {
     test(`debe iniciar sesion y cargar dashboard para ${credential.label}`, async ({ page }) => {
       await loginAndValidateDashboard(page, credential);
     });
+
+    test(`debe revisar area de configuracion para ${credential.label}`, async ({ page }) => {
+      await loginWithCredential(page, credential);
+      await validateSettingsArea(page);
+    });
+
+    if (credential.roleNumber === 1) {
+      test('debe cambiar foto de perfil para rol_1 desde E2E_NEW_IMG_URL_1', async ({ page }) => {
+        test.skip(!credential.newImageUrl, 'Define E2E_NEW_IMG_URL_1 en .env para ejecutar este test.');
+
+        await loginWithCredential(page, credential);
+        await updateProfilePhotoFromUrl(page, credential.newImageUrl as string);
+      });
+    }
   }
 });
