@@ -97,6 +97,14 @@ Se incluye el workflow [playwright.yml](.github/workflows/playwright.yml) para c
 - `E2E_LOGIN_EMAIL_ROLE_3`, `E2E_LOGIN_PASSWORD_ROLE_3`
 - Publica artefactos con reporte y resultados.
 
+Ademas, el workflow despliega el reporte HTML de Playwright en GitHub Pages (eventos push/manual; no en pull_request).
+
+Para habilitarlo en el repositorio:
+
+1. Ve a Settings > Pages.
+1. En Build and deployment, selecciona Source: GitHub Actions.
+1. Ejecuta el workflow y abre la URL publicada del entorno `github-pages`.
+
 ## Estructura inicial
 
 - `playwright.config.ts`: configuracion global del runner.
