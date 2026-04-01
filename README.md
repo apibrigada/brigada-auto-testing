@@ -33,7 +33,7 @@ cp .env.example .env
 
 Por defecto, este repo esta configurado para correr contra:
 
-- Frontend: <https://web-cms-git-dev-brigadadigitals-projects.vercel.app/>
+- Frontend: <https://web-cms-murex.vercel.app/>
 - Backend: opcional via `API_BASE_URL` en `.env`.
 
 Con esa configuracion (`E2E_DISABLE_WEBSERVER=true`), Playwright no levanta webCMS localmente.
@@ -89,7 +89,12 @@ Si prefieres correr contra una instancia local, ajusta en `.env`:
 
 Se incluye el workflow [playwright.yml](.github/workflows/playwright.yml) para correr E2E en cada push/PR a `main` o `master`.
 
-- Ejecuta pruebas contra los servidores desplegados definidos en variables de entorno del job.
+- Ejecuta pruebas contra servidores desplegados usando `E2E_BASE_URL` desde GitHub Variables (o fallback a murex).
+- Toma credenciales de login desde GitHub Secrets:
+- `E2E_LOGIN_EMAIL`, `E2E_LOGIN_PASSWORD` (opcional, formato legacy)
+- `E2E_LOGIN_EMAIL_ROLE_1`, `E2E_LOGIN_PASSWORD_ROLE_1`
+- `E2E_LOGIN_EMAIL_ROLE_2`, `E2E_LOGIN_PASSWORD_ROLE_2`
+- `E2E_LOGIN_EMAIL_ROLE_3`, `E2E_LOGIN_PASSWORD_ROLE_3`
 - Publica artefactos con reporte y resultados.
 
 ## Estructura inicial
