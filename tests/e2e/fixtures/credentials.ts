@@ -73,7 +73,8 @@ export function getCredentialByRoleNumber(
   roleNumber: number,
 ): LoginCredential | null {
   return (
-    getLoginCredentials().find((credential) => credential.roleNumber === roleNumber) ??
-    null
+    getLoginCredentials().find(
+      (credential) => credential.roleNumber === roleNumber,
+    ) ?? null
   );
 }

@@ -37,7 +37,8 @@ export class LoginPage {
       this.page.waitForURL(
         (url: URL) =>
           expectedOutcome === "restricted"
-            ? url.pathname === "/login" && url.searchParams.get("error") === "admin_only"
+            ? url.pathname === "/login" &&
+              url.searchParams.get("error") === "admin_only"
             : !url.pathname.startsWith("/login"),
         {
           timeout: 15000,

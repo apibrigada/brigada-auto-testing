@@ -9,20 +9,29 @@ function uniqueRoleKey(): string {
 }
 
 test.describe("roles critical path", () => {
-  test.skip(!adminCredential, "Define E2E_LOGIN_EMAIL_ROLE_1/E2E_LOGIN_PASSWORD_ROLE_1 in .env.");
+  test.skip(
+    !adminCredential,
+    "Define E2E_LOGIN_EMAIL_ROLE_1/E2E_LOGIN_PASSWORD_ROLE_1 in .env.",
+  );
 
-  test("creates a custom role and toggles its active state", async ({ page }) => {
+  test("creates a custom role and toggles its active state", async ({
+    page,
+  }) => {
     const loginPage = new LoginPage(page);
     const roleKey = uniqueRoleKey();
     const roleName = `Rol E2E ${Date.now()}`;
 
     await loginPage.login(adminCredential!);
     await page.goto("/dashboard/roles");
-    await expect(page.getByRole("heading", { name: "Roles y Permisos" })).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: "Roles y Permisos" }),
+    ).toBeVisible();
 
     await page.getByPlaceholder("key (ej. evaluacion_norte)").fill(roleKey);
     await page.getByPlaceholder("Nombre visible").fill(roleName);
-    await page.getByPlaceholder("Descripción (opcional)").fill("Rol creado por Playwright");
+    await page
+      .getByPlaceholder("Descripción (opcional)")
+      .fill("Rol creado por Playwright");
 
     await page.getByText("Ver usuarios").click();
 
@@ -33,6 +42,8 @@ test.describe("roles critical path", () => {
     await expect(row).toBeVisible();
     await row.getByRole("button", { name: /Desactivar|Activar/ }).click();
 
-    await expect(page.getByText("Rol desactivado")).toBeVisible({ timeout: 30000 });
+    await expect(page.getByText("Rol desactivado")).toBeVisible({
+      timeout: 30000,
+    });
   });
 });

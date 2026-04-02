@@ -18,7 +18,10 @@ function samplePolygon() {
 }
 
 test.describe("areas critical path", () => {
-  test.skip(!adminCredential, "Define E2E_LOGIN_EMAIL_ROLE_1/E2E_LOGIN_PASSWORD_ROLE_1 in .env.");
+  test.skip(
+    !adminCredential,
+    "Define E2E_LOGIN_EMAIL_ROLE_1/E2E_LOGIN_PASSWORD_ROLE_1 in .env.",
+  );
 
   test("creates, updates and deletes an area", async ({ page }) => {
     const loginPage = new LoginPage(page);
@@ -38,7 +41,9 @@ test.describe("areas critical path", () => {
     const createdArea = (await createResponse.json()) as { id: number };
 
     await page.goto("/dashboard/areas");
-    await expect(page.getByRole("heading", { name: "Mapa de Áreas" })).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: "Mapa de Áreas" }),
+    ).toBeVisible();
     await expect(page.getByRole("button", { name: areaName })).toBeVisible();
 
     await page.getByRole("button", { name: areaName }).click();
@@ -59,6 +64,8 @@ test.describe("areas critical path", () => {
     await page.getByRole("button", { name: "Eliminar área" }).click();
     await deletePromise;
 
-    await expect(page.getByRole("button", { name: updatedName })).toHaveCount(0);
+    await expect(page.getByRole("button", { name: updatedName })).toHaveCount(
+      0,
+    );
   });
 });

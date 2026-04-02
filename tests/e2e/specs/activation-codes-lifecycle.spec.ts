@@ -9,7 +9,10 @@ function uniqueEmail(): string {
 }
 
 test.describe("activation codes lifecycle", () => {
-  test.skip(!adminCredential, "Define E2E_LOGIN_EMAIL_ROLE_1/E2E_LOGIN_PASSWORD_ROLE_1 in .env.");
+  test.skip(
+    !adminCredential,
+    "Define E2E_LOGIN_EMAIL_ROLE_1/E2E_LOGIN_PASSWORD_ROLE_1 in .env.",
+  );
 
   test("creates a code, locates it and revokes it", async ({ page }) => {
     const loginPage = new LoginPage(page);
@@ -18,36 +21,52 @@ test.describe("activation codes lifecycle", () => {
 
     await loginPage.login(adminCredential!);
 
-    const whitelistResponse = await page.request.post("/api/backend/admin/whitelist", {
-      data: {
-        identifier: email,
-        identifier_type: "email",
-        full_name: fullName,
-        assigned_role: "brigadista",
+    const whitelistResponse = await page.request.post(
+      "/api/backend/admin/whitelist",
+      {
+        data: {
+          identifier: email,
+          identifier_type: "email",
+          full_name: fullName,
+          assigned_role: "brigadista",
+        },
       },
-    });
+    );
     expect(whitelistResponse.ok()).toBeTruthy();
     const whitelist = (await whitelistResponse.json()) as { id: number };
 
-    const codeResponse = await page.request.post("/api/backend/admin/activation-codes/generate", {
-      data: {
-        whitelist_id: whitelist.id,
-        expires_in_hours: 72,
-        send_email: false,
-        email_template: "default",
+    const codeResponse = await page.request.post(
+      "/api/backend/admin/activation-codes/generate",
+      {
+        data: {
+          whitelist_id: whitelist.id,
+          expires_in_hours: 72,
+          send_email: false,
+          email_template: "default",
+        },
       },
-    });
+    );
     expect(codeResponse.ok()).toBeTruthy();
 
     await page.goto("/dashboard/activation-codes");
-    await expect(page.getByRole("heading", { name: "Codigos de activacion" })).toBeVisible();
-    await page.getByPlaceholder("Buscar por nombre, email o identificador...").fill(email);
+    await expect(
+      page.getByRole("heading", { name: "Codigos de activacion" }),
+    ).toBeVisible();
+    await page
+      .getByPlaceholder("Buscar por nombre, email o identificador...")
+      .fill(email);
 
     await expect(page.getByText(fullName)).toBeVisible({ timeout: 30000 });
     await page.getByRole("button", { name: "Revocar código" }).first().click();
-    await expect(page.getByRole("heading", { name: "Revocar código de activación" })).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: "Revocar código de activación" }),
+    ).toBeVisible();
 
-    await page.getByPlaceholder("Ej. solicitud del usuario, seguridad, información incorrecta...").fill("E2E cleanup");
+    await page
+      .getByPlaceholder(
+        "Ej. solicitud del usuario, seguridad, información incorrecta...",
+      )
+      .fill("E2E cleanup");
     await page.getByRole("button", { name: "Revocar código" }).last().click();
 
     await expect(page.getByText("Revocado")).toBeVisible({ timeout: 30000 });

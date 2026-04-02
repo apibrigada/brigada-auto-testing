@@ -20,7 +20,9 @@ test.describe("access control critical path", () => {
 
       await loginPage.login(credential, { expectedOutcome: "restricted" });
       await expect(page).toHaveURL(/\/login\?error=admin_only$/);
-      await expect(page.getByRole("heading", { name: "Brigada CMS" })).toBeVisible();
+      await expect(
+        page.getByRole("heading", { name: "Brigada CMS" }),
+      ).toBeVisible();
     });
   }
 });
