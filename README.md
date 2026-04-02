@@ -125,6 +125,18 @@ Specs iniciales agregados:
 - `tests/e2e/specs/auth.spec.ts`
 - `tests/e2e/specs/dashboard-settings.spec.ts`
 - `tests/e2e/specs/assignments-areas.spec.ts`
+- `tests/e2e/specs/access-control.spec.ts`
+- `tests/e2e/specs/areas-crud.spec.ts`
+- `tests/e2e/specs/users-invite.spec.ts`
+- `tests/e2e/specs/whitelist.spec.ts`
+- `tests/e2e/specs/activation-codes-lifecycle.spec.ts`
+- `tests/e2e/specs/roles.spec.ts`
+
+Notas de cobertura:
+
+- `admin` y `encargado` cubren dashboard, settings y asignaciones.
+- `brigadista` se valida como rol restringido para dashboard y rutas del CMS.
+- Los flujos de `areas`, `roles`, `whitelist` y `activation-codes` se ejecutan con el rol `admin`.
 
 Puedes ejecutarlos todos con:
 

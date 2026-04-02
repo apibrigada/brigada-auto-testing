@@ -5,6 +5,9 @@ export type LoginCredential = {
   roleNumber?: number;
 };
 
+const CMS_ACCESS_ROLE_NUMBERS = new Set([1, 2]);
+const RESTRICTED_ROLE_NUMBERS = new Set([3]);
+
 export function getLoginCredentials(): LoginCredential[] {
   const credentials: LoginCredential[] = [];
 
@@ -44,4 +47,33 @@ export function getLoginCredentials(): LoginCredential[] {
 export function getFirstCredential(): LoginCredential | null {
   const credentials = getLoginCredentials();
   return credentials.length > 0 ? credentials[0] : null;
+}
+
+export function getCmsAccessCredentials(): LoginCredential[] {
+  return getLoginCredentials().filter((credential) => {
+    if (typeof credential.roleNumber !== "number") {
+      return true;
+    }
+
+    return CMS_ACCESS_ROLE_NUMBERS.has(credential.roleNumber);
+  });
+}
+
+export function getRestrictedCredentials(): LoginCredential[] {
+  return getLoginCredentials().filter((credential) => {
+    if (typeof credential.roleNumber !== "number") {
+      return false;
+    }
+
+    return RESTRICTED_ROLE_NUMBERS.has(credential.roleNumber);
+  });
+}
+
+export function getCredentialByRoleNumber(
+  roleNumber: number,
+): LoginCredential | null {
+  return (
+    getLoginCredentials().find((credential) => credential.roleNumber === roleNumber) ??
+    null
+  );
 }

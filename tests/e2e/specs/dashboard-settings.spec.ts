@@ -1,10 +1,10 @@
 import { test } from "@playwright/test";
-import { getLoginCredentials } from "../fixtures/credentials.js";
+import { getCmsAccessCredentials } from "../fixtures/credentials.js";
 import { DashboardPage } from "../pages/dashboard.page.js";
 import { LoginPage } from "../pages/login.page.js";
 import { SettingsPage } from "../pages/settings.page.js";
 
-const credentials = getLoginCredentials();
+const credentials = getCmsAccessCredentials();
 
 test.describe("dashboard and settings critical path", () => {
   if (credentials.length === 0) {

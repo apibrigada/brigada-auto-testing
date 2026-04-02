@@ -1,8 +1,8 @@
 import { expect, test } from "@playwright/test";
-import { getLoginCredentials } from "../fixtures/credentials.js";
+import { getCmsAccessCredentials } from "../fixtures/credentials.js";
 import { LoginPage } from "../pages/login.page.js";
 
-const credentials = getLoginCredentials();
+const credentials = getCmsAccessCredentials();
 
 test.describe("auth critical path", () => {
   test("redirects root to login", async ({ page }) => {

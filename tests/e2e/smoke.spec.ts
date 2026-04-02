@@ -10,6 +10,8 @@ type LoginCredential = {
   newImageUrl?: string;
 };
 
+type LoginOutcome = "dashboard" | "restricted";
+
 function getLoginCredentials(): LoginCredential[] {
   const credentials: LoginCredential[] = [];
 
@@ -65,7 +67,13 @@ async function loginAndValidateDashboard(page: Page, credential: LoginCredential
   });
 }
 
-async function loginWithCredential(page: Page, credential: LoginCredential) {
+async function loginWithCredential(
+  page: Page,
+  credential: LoginCredential,
+  options?: { expectedOutcome?: LoginOutcome },
+) {
+  const expectedOutcome = options?.expectedOutcome ?? "dashboard";
+
   await page.goto('/login');
 
   await expect(page.locator('#email')).toBeVisible();
@@ -78,13 +86,25 @@ async function loginWithCredential(page: Page, credential: LoginCredential) {
   const loginError = page.locator('form div.bg-red-50');
 
   await Promise.race([
-    page.waitForURL((url: URL) => !url.pathname.startsWith('/login'), { timeout: 15000 }),
+    page.waitForURL(
+      (url: URL) =>
+        expectedOutcome === "restricted"
+          ? url.pathname === "/login" && url.searchParams.get("error") === "admin_only"
+          : !url.pathname.startsWith('/login'),
+      { timeout: 15000 },
+    ),
     loginError.waitFor({ state: 'visible', timeout: 15000 })
   ]);
 
   if (await loginError.isVisible()) {
     const errorText = (await loginError.textContent())?.trim() || 'Error de autenticación sin detalle';
     throw new Error(`Login fallido para ${credential.label}: ${errorText}`);
+  }
+
+  if (expectedOutcome === 'restricted') {
+    await expect(page).toHaveURL(/\/login\?error=admin_only$/);
+    await page.waitForLoadState('domcontentloaded');
+    return;
   }
 
   await expect(page).toHaveURL(/\/dashboard(?:\/.*)?$/);
@@ -168,6 +188,12 @@ async function updateProfilePhotoFromUrl(page: Page, imageUrl: string) {
 }
 
 const loginCredentials = getLoginCredentials();
+const cmsAccessCredentials = loginCredentials.filter(
+  (credential) => credential.roleNumber !== 3,
+);
+const restrictedCredentials = loginCredentials.filter(
+  (credential) => credential.roleNumber === 3,
+);
 
 test.describe('webCMS smoke', () => {
   test('debe redirigir de raiz a login', async ({ page }) => {
@@ -188,7 +214,7 @@ test.describe('webCMS smoke', () => {
     });
   }
 
-  for (const credential of loginCredentials) {
+  for (const credential of cmsAccessCredentials) {
     test(`debe iniciar sesion y cargar dashboard para ${credential.label}`, async ({ page }) => {
       await loginAndValidateDashboard(page, credential);
     });
@@ -206,5 +232,12 @@ test.describe('webCMS smoke', () => {
         await updateProfilePhotoFromUrl(page, credential.newImageUrl as string);
       });
     }
+  }
+
+  for (const credential of restrictedCredentials) {
+    test(`debe rechazar acceso al dashboard para ${credential.label}`, async ({ page }) => {
+      await loginWithCredential(page, credential, { expectedOutcome: 'restricted' });
+      await expect(page).toHaveURL(/\/login\?error=admin_only$/);
+    });
   }
 });
