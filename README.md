@@ -112,3 +112,28 @@ Para habilitarlo en el repositorio:
 - `playwright.config.ts`: configuracion global del runner.
 - `tests/e2e/smoke.spec.ts`: smoke tests de redireccion, login, dashboard, area de configuracion y cambio de foto de rol 1.
 - `.env.example`: variables para ejecutar en remoto o local.
+
+## Estructura POM recomendada (base incluida)
+
+- `tests/e2e/pages/`: page objects por pantalla (`login`, `dashboard`, `settings`, `assignments`).
+- `tests/e2e/components/`: componentes reutilizables (`sidebar`).
+- `tests/e2e/fixtures/`: helpers de credenciales y fixtures compartidas.
+- `tests/e2e/specs/`: suites por flujo critico.
+
+Specs iniciales agregados:
+
+- `tests/e2e/specs/auth.spec.ts`
+- `tests/e2e/specs/dashboard-settings.spec.ts`
+- `tests/e2e/specs/assignments-areas.spec.ts`
+
+Puedes ejecutarlos todos con:
+
+```bash
+npm run test:e2e
+```
+
+O solo los nuevos specs:
+
+```bash
+npx playwright test tests/e2e/specs
+```
