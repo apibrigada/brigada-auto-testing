@@ -12,14 +12,14 @@ export class SettingsPage {
     await expect(
       this.page.getByRole("heading", { name: /configuraci[oó]n/i }),
     ).toBeVisible();
-    await expect(
-      this.page.getByText(/administra tu perfil/i),
-    ).toBeVisible();
+    await expect(this.page.getByText(/administra tu perfil/i)).toBeVisible();
     await this.expectTabButtons();
   }
 
   async expectTabButtons(): Promise<void> {
-    await expect(this.page.getByRole("button", { name: /^perfil$/i })).toBeVisible();
+    await expect(
+      this.page.getByRole("button", { name: /^perfil$/i }),
+    ).toBeVisible();
     await expect(
       this.page.getByRole("button", { name: /contras|contrase/i }),
     ).toBeVisible();
@@ -50,16 +50,26 @@ export class SettingsPage {
 
   async expectPasswordContent(): Promise<void> {
     await expect(this.page.getByText(/seguridad/i)).toBeVisible();
-    await expect(this.page.getByText(/fortaleza de contrase|fortaleza de contras/i)).toBeVisible();
+    await expect(
+      this.page.getByText(/fortaleza de contrase|fortaleza de contras/i),
+    ).toBeVisible();
   }
 
   async expectSystemContent(): Promise<void> {
-    await expect(this.page.getByText(/notificaciones por correo/i)).toBeVisible();
-    await expect(this.page.getByRole("button", { name: /guardar preferencias/i })).toBeVisible();
+    await expect(
+      this.page.getByText(/notificaciones por correo/i),
+    ).toBeVisible();
+    await expect(
+      this.page.getByRole("button", { name: /guardar preferencias/i }),
+    ).toBeVisible();
   }
 
   async clickVisibleButtonByText(label: RegExp): Promise<void> {
-    await this.page.locator("button:visible").filter({ hasText: label }).first().click();
+    await this.page
+      .locator("button:visible")
+      .filter({ hasText: label })
+      .first()
+      .click();
   }
 
   profileFirstNameInput() {

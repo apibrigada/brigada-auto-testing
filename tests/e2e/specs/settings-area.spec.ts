@@ -50,18 +50,22 @@ test.describe("settings area standards", () => {
 
         await settingsPage.newPasswordInput().fill("Password123");
         await settingsPage.confirmPasswordInput().fill("Password456");
-        await settingsPage.clickVisibleButtonByText(/cambiar contrase|cambiar contras/i);
+        await settingsPage.clickVisibleButtonByText(
+          /cambiar contrase|cambiar contras/i,
+        );
 
-        await expect(
-          page.getByText(/no coinciden/i).first(),
-        ).toBeVisible();
+        await expect(page.getByText(/no coinciden/i).first()).toBeVisible();
       });
 
       await test.step("Profile tab validates required fields", async () => {
         await settingsPage.openProfileTab();
 
-        const originalFirstName = await settingsPage.profileFirstNameInput().inputValue();
-        const originalLastName = await settingsPage.profileLastNameInput().inputValue();
+        const originalFirstName = await settingsPage
+          .profileFirstNameInput()
+          .inputValue();
+        const originalLastName = await settingsPage
+          .profileLastNameInput()
+          .inputValue();
 
         await settingsPage.profileFirstNameInput().fill("");
         await settingsPage.profileLastNameInput().fill("");
@@ -88,7 +92,9 @@ test.describe("settings area standards", () => {
           await expect(page.getByText(/apariencia y tema/i)).toBeVisible();
 
           await settingsPage.appConfigSectionButton(/6\.\s*splash/i).click();
-          await expect(page.getByText(/personalizaci[oó]n del splash/i)).toBeVisible();
+          await expect(
+            page.getByText(/personalizaci[oó]n del splash/i),
+          ).toBeVisible();
         }
       });
     });
