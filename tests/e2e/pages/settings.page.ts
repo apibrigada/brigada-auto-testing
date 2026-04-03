@@ -10,21 +10,95 @@ export class SettingsPage {
 
   async expectLoaded(): Promise<void> {
     await expect(
-      this.page.getByRole("heading", { name: "Configuración" }),
+      this.page.getByRole("heading", { name: /configuraci[oó]n/i }),
     ).toBeVisible();
     await expect(
-      this.page.getByText(
-        "Administra tu perfil, contraseña y preferencias del sistema",
-      ),
+      this.page.getByText(/administra tu perfil/i),
+    ).toBeVisible();
+    await this.expectTabButtons();
+  }
+
+  async expectTabButtons(): Promise<void> {
+    await expect(this.page.getByRole("button", { name: /^perfil$/i })).toBeVisible();
+    await expect(
+      this.page.getByRole("button", { name: /contras|contrase/i }),
     ).toBeVisible();
     await expect(
-      this.page.getByRole("button", { name: "Perfil" }),
+      this.page.getByRole("button", { name: /preferencias/i }),
     ).toBeVisible();
-    await expect(
-      this.page.getByRole("button", { name: "Contraseña" }),
-    ).toBeVisible();
-    await expect(
-      this.page.getByRole("button", { name: "Preferencias" }),
-    ).toBeVisible();
+  }
+
+  async openProfileTab(): Promise<void> {
+    await this.page.getByRole("button", { name: /^perfil$/i }).click();
+    await this.expectProfileContent();
+  }
+
+  async openPasswordTab(): Promise<void> {
+    await this.page.getByRole("button", { name: /contras|contrase/i }).click();
+    await this.expectPasswordContent();
+  }
+
+  async openSystemTab(): Promise<void> {
+    await this.page.getByRole("button", { name: /preferencias/i }).click();
+    await this.expectSystemContent();
+  }
+
+  async expectProfileContent(): Promise<void> {
+    await expect(this.page.getByText(/datos personales/i)).toBeVisible();
+    await expect(this.page.getByText(/cuenta/i)).toBeVisible();
+  }
+
+  async expectPasswordContent(): Promise<void> {
+    await expect(this.page.getByText(/seguridad/i)).toBeVisible();
+    await expect(this.page.getByText(/fortaleza de contrase|fortaleza de contras/i)).toBeVisible();
+  }
+
+  async expectSystemContent(): Promise<void> {
+    await expect(this.page.getByText(/notificaciones por correo/i)).toBeVisible();
+    await expect(this.page.getByRole("button", { name: /guardar preferencias/i })).toBeVisible();
+  }
+
+  async clickVisibleButtonByText(label: RegExp): Promise<void> {
+    await this.page.locator("button:visible").filter({ hasText: label }).first().click();
+  }
+
+  profileFirstNameInput() {
+    return this.page.getByPlaceholder("Tu nombre");
+  }
+
+  profileLastNameInput() {
+    return this.page.getByPlaceholder("Tu apellido");
+  }
+
+  currentPasswordInput() {
+    return this.page.locator('input[name="currentPassword"]');
+  }
+
+  newPasswordInput() {
+    return this.page.locator('input[name="newPassword"]');
+  }
+
+  confirmPasswordInput() {
+    return this.page.locator('input[name="confirmPassword"]');
+  }
+
+  currentPasswordToggleButton() {
+    return this.page
+      .locator('div:has(input[name="currentPassword"]) button[aria-label]')
+      .first();
+  }
+
+  emailNotificationsCheckbox() {
+    return this.page.getByLabel(/recibir notificaciones por correo/i);
+  }
+
+  appConfigHeader() {
+    return this.page.getByRole("heading", {
+      name: /configuraci[oó]n global de app m[oó]vil/i,
+    });
+  }
+
+  appConfigSectionButton(label: RegExp) {
+    return this.page.getByRole("button", { name: label });
   }
 }
