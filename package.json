@@ -8,6 +8,8 @@
   },
   "scripts": {
     "test:e2e": "playwright test",
+    "test:e2e:frontend": "playwright test --config=playwright.frontend.config.ts",
+    "test:e2e:frontend:headed": "playwright test --config=playwright.frontend.config.ts --headed",
     "test:e2e:ui": "playwright test --ui",
     "test:e2e:headed": "playwright test --headed",
     "test:e2e:debug": "playwright test --debug",
