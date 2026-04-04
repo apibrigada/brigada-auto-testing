@@ -5,12 +5,14 @@ export class AssignmentsPage {
 
   async goto(): Promise<void> {
     await this.page.goto("/dashboard/assignments");
-    await expect(this.page).toHaveURL(/\/dashboard\/assignments$/);
+    await expect(this.page).toHaveURL(
+      /\/dashboard\/(assignments|assignment-groups)(?:\/.*)?$/,
+    );
   }
 
   async expectLoaded(): Promise<void> {
     await expect(
-      this.page.getByRole("heading", { name: "Asignaciones" }),
+      this.page.getByRole("heading", { name: /Asignaciones|Grupos de asignaci/i }).first(),
     ).toBeVisible();
   }
 

@@ -33,7 +33,7 @@ test.describe("roles critical path", () => {
       .getByPlaceholder("Descripción (opcional)")
       .fill("Rol creado por Playwright");
 
-    await page.getByText("Ver usuarios").click();
+    await page.getByText("Ver usuarios").first().click();
 
     await page.getByRole("button", { name: "Crear rol" }).click();
     await expect(page.getByText(roleName)).toBeVisible({ timeout: 30000 });

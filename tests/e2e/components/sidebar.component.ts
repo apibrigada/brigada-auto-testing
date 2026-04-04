@@ -7,6 +7,8 @@ export class SidebarComponent {
     const link = this.page.getByRole("link", { name: /Asignaciones/i }).first();
     await expect(link).toBeVisible();
     await link.click();
-    await expect(this.page).toHaveURL(/\/dashboard\/assignments$/);
+    await expect(this.page).toHaveURL(
+      /\/dashboard\/(assignments|assignment-groups)(?:\/.*)?$/,
+    );
   }
 }

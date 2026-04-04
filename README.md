@@ -33,7 +33,7 @@ cp .env.example .env
 
 Por defecto, este repo esta configurado para correr contra:
 
-- Frontend: <https://web-cms-murex.vercel.app/>
+- Frontend: [https://web-cms-murex.vercel.app/](https://web-cms-murex.vercel.app/)
 - Backend: opcional via `API_BASE_URL` en `.env`.
 
 Con esa configuracion (`E2E_DISABLE_WEBSERVER=true`), Playwright no levanta webCMS localmente.
@@ -104,8 +104,8 @@ Ademas, el workflow despliega el reporte HTML de Playwright en GitHub Pages (eve
 Para habilitarlo en el repositorio:
 
 1. Ve a Settings > Pages.
-1. En Build and deployment, selecciona Source: GitHub Actions.
-1. Ejecuta el workflow y abre la URL publicada del entorno `github-pages`.
+2. En Build and deployment, selecciona Source: GitHub Actions.
+3. Ejecuta el workflow y abre la URL publicada del entorno `github-pages`.
 
 ## Estructura inicial
 
@@ -143,6 +143,13 @@ Puedes ejecutarlos todos con:
 ```bash
 npm run test:e2e
 ```
+
+O con interfaz gráfica:
+
+```bash
+npm run test:e2e:ui
+```
+
 
 O solo los nuevos specs:
 

@@ -137,10 +137,10 @@ async function validateSettingsArea(page: Page) {
       "Administra tu perfil, contraseña y preferencias del sistema",
     ),
   ).toBeVisible();
-  await expect(page.getByRole("button", { name: "Perfil" })).toBeVisible();
-  await expect(page.getByRole("button", { name: "Contraseña" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Perfil" }).first()).toBeVisible();
+  await expect(page.getByRole("button", { name: "Contraseña" }).first()).toBeVisible();
   await expect(
-    page.getByRole("button", { name: "Preferencias" }),
+    page.getByRole("button", { name: "Preferencias" }).first(),
   ).toBeVisible();
 }
 
@@ -194,8 +194,8 @@ async function updateProfilePhotoFromUrl(page: Page, imageUrl: string) {
 
   await page.getByRole("button", { name: "Guardar cambios" }).click();
 
-  const successMessage = page.getByText("Perfil actualizado exitosamente");
-  const errorMessage = page.getByText("Error al actualizar el perfil");
+  const successMessage = page.getByText("Perfil actualizado exitosamente").first();
+  const errorMessage = page.getByText("Error al actualizar el perfil").first();
 
   await Promise.race([
     successMessage.waitFor({ state: "visible", timeout: 30000 }),

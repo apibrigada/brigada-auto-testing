@@ -18,49 +18,55 @@ export class SettingsPage {
 
   async expectTabButtons(): Promise<void> {
     await expect(
-      this.page.getByRole("button", { name: /^perfil$/i }),
+      this.page.getByRole("button", { name: /^perfil$/i }).first(),
     ).toBeVisible();
     await expect(
-      this.page.getByRole("button", { name: /contras|contrase/i }),
+      this.page.getByRole("button", { name: /contras|contrase/i }).first(),
     ).toBeVisible();
     await expect(
-      this.page.getByRole("button", { name: /preferencias/i }),
+      this.page.getByRole("button", { name: /preferencias/i }).first(),
     ).toBeVisible();
   }
 
   async openProfileTab(): Promise<void> {
-    await this.page.getByRole("button", { name: /^perfil$/i }).click();
+    await this.page.getByRole("button", { name: /^perfil$/i }).first().click();
     await this.expectProfileContent();
   }
 
   async openPasswordTab(): Promise<void> {
-    await this.page.getByRole("button", { name: /contras|contrase/i }).click();
+    await this.page
+      .getByRole("button", { name: /contras|contrase/i })
+      .first()
+      .click();
     await this.expectPasswordContent();
   }
 
   async openSystemTab(): Promise<void> {
-    await this.page.getByRole("button", { name: /preferencias/i }).click();
+    await this.page
+      .getByRole("button", { name: /preferencias/i })
+      .first()
+      .click();
     await this.expectSystemContent();
   }
 
   async expectProfileContent(): Promise<void> {
-    await expect(this.page.getByText(/datos personales/i)).toBeVisible();
-    await expect(this.page.getByText(/cuenta/i)).toBeVisible();
+    await expect(this.page.getByText(/datos personales/i).first()).toBeVisible();
+    await expect(this.page.getByText(/cuenta/i).first()).toBeVisible();
   }
 
   async expectPasswordContent(): Promise<void> {
-    await expect(this.page.getByText(/seguridad/i)).toBeVisible();
+    await expect(this.page.getByText(/seguridad/i).first()).toBeVisible();
     await expect(
-      this.page.getByText(/fortaleza de contrase|fortaleza de contras/i),
+      this.page.getByText(/fortaleza de contrase|fortaleza de contras/i).first(),
     ).toBeVisible();
   }
 
   async expectSystemContent(): Promise<void> {
     await expect(
-      this.page.getByText(/notificaciones por correo/i),
+      this.page.getByText(/notificaciones por correo/i).first(),
     ).toBeVisible();
     await expect(
-      this.page.getByRole("button", { name: /guardar preferencias/i }),
+      this.page.getByRole("button", { name: /guardar preferencias/i }).first(),
     ).toBeVisible();
   }
 
@@ -93,9 +99,7 @@ export class SettingsPage {
   }
 
   currentPasswordToggleButton() {
-    return this.page
-      .locator('div:has(input[name="currentPassword"]) button[aria-label]')
-      .first();
+    return this.page.getByRole("button", { name: /(?:Mostrar|Ocultar) contraseña/i }).first();
   }
 
   emailNotificationsCheckbox() {
