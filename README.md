@@ -124,6 +124,7 @@ Specs iniciales agregados:
 
 - `tests/e2e/specs/auth.spec.ts`
 - `tests/e2e/specs/dashboard-settings.spec.ts`
+- `tests/e2e/specs/dashboard-zones-journeys.spec.ts`
 - `tests/e2e/specs/assignments-areas.spec.ts`
 - `tests/e2e/specs/access-control.spec.ts`
 - `tests/e2e/specs/areas-crud.spec.ts`
