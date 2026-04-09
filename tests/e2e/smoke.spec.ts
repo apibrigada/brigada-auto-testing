@@ -1,4 +1,8 @@
 import { test, expect, type Page } from "@playwright/test";
+import fs from "fs";
+import path from "path";
+
+const authDir = path.resolve(__dirname, "../../.auth");
 
 const dashboardStatsTimeoutMs = Number(
   process.env.E2E_DASHBOARD_STATS_TIMEOUT_MS ?? 30000,
@@ -78,12 +82,76 @@ async function loginAndValidateDashboard(
   });
 }
 
+async function tryRestoreAuthState(
+  page: Page,
+  roleNumber: number,
+): Promise<boolean> {
+  const statePath = path.join(authDir, `rol_${roleNumber}.json`);
+  if (!fs.existsSync(statePath)) return false;
+
+  try {
+    const state = JSON.parse(fs.readFileSync(statePath, "utf-8")) as {
+      cookies?: unknown[];
+      origins?: Array<{
+        origin: string;
+        localStorage: Array<{ name: string; value: string }>;
+      }>;
+    };
+
+    // Restaurar cookies HTTP
+    if (Array.isArray(state.cookies) && state.cookies.length > 0) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      await page.context().addCookies(state.cookies as any);
+    }
+
+    // Restaurar localStorage (auth-storage de Zustand)
+    const allLocalStorage =
+      state.origins?.flatMap((o) => o.localStorage ?? []) ?? [];
+    if (allLocalStorage.length > 0) {
+      await page.context().addInitScript(
+        (items: Array<{ name: string; value: string }>) => {
+          for (const { name, value } of items) {
+            window.localStorage.setItem(name, value);
+          }
+        },
+        allLocalStorage,
+      );
+    }
+
+    return Array.isArray(state.cookies) && state.cookies.length > 0;
+  } catch {
+    // Estado corrupto; se hará login normal.
+  }
+  return false;
+}
+
 async function loginWithCredential(
   page: Page,
   credential: LoginCredential,
   options?: { expectedOutcome?: LoginOutcome },
 ) {
   const expectedOutcome = options?.expectedOutcome ?? "dashboard";
+
+  // Para usuarios CMS, reutilizar el auth state guardado por el globalSetup.
+  if (
+    typeof credential.roleNumber === "number" &&
+    expectedOutcome === "dashboard"
+  ) {
+    const restored = await tryRestoreAuthState(page, credential.roleNumber);
+    if (restored) {
+      try {
+        await page.goto("/dashboard");
+        const currentUrl = page.url();
+        if (currentUrl && !currentUrl.includes("/login")) {
+          await page.waitForLoadState("domcontentloaded");
+          return;
+        }
+        // Token expirado — continúa con login normal.
+      } catch {
+        // Error de navegación — continúa con login normal.
+      }
+    }
+  }
 
   await page.goto("/login");
 

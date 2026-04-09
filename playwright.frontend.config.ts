@@ -9,7 +9,7 @@ const webServerCommand =
   process.env.E2E_FRONT_WEB_SERVER_COMMAND ?? "npm run web -- --port 8081";
 const webServerCwd =
   process.env.E2E_FRONT_WEB_SERVER_CWD ??
-  path.resolve(__dirname, "../brigadaFrontEnd");
+  path.resolve(__dirname, "../brigadaApp");
 const disableWebServer =
   process.env.E2E_FRONT_DISABLE_WEBSERVER === "true";
 

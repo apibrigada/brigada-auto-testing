@@ -4,6 +4,8 @@ import path from 'path';
 
 dotenv.config();
 
+const globalSetupPath = path.resolve(__dirname, 'tests/e2e/global.setup.ts');
+
 const baseURL = process.env.E2E_BASE_URL ?? 'http://127.0.0.1:3100';
 const webServerCommand =
   process.env.E2E_WEB_SERVER_COMMAND ?? 'npm run dev -- --port 3100';
@@ -13,6 +15,7 @@ const disableWebServer = process.env.E2E_DISABLE_WEBSERVER === 'true';
 
 export default defineConfig({
   testDir: './tests',
+  globalSetup: globalSetupPath,
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,

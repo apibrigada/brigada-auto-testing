@@ -1,4 +1,5 @@
 .env
+.auth/
 .venv/
 node_modules/
 playwright-report/
