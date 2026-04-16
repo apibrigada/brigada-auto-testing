@@ -1,0 +1,894 @@
+{
+  "info": {
+    "_postman_id": "b3c4d5e6-f7a8-4901-bcde-f01234567890",
+    "name": "Brigada QA — Permission Tests",
+    "description": "API permission test suite seeded by seed_qa_permissions.py.\n\nHow to use:\n1. Set the collection variables (base_url, admin_password, etc.)\n2. Run the '🔧 Setup' folder first using Collection Runner to discover IDs.\n3. Run each scenario folder in order — each has a Login request that saves {{qa_token}}.\n4. Use Collection Runner > Run Folder to execute all requests in a scenario.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "base_url",              "value": "http://localhost:8000",    "type": "string" },
+    { "key": "qa_password",           "value": "QABrigada2026!",           "type": "string" },
+    { "key": "admin_email",           "value": "admin@brigada.com",        "type": "string" },
+    { "key": "admin_password",        "value": "admin123",                 "type": "string" },
+    { "key": "admin_token",           "value": "",                         "type": "string" },
+    { "key": "qa_token",              "value": "",                         "type": "string" },
+    { "key": "survey_id_in_scope",    "value": "",                         "type": "string" },
+    { "key": "survey_id_out_scope",   "value": "",                         "type": "string" },
+    { "key": "survey_version_id",     "value": "",                         "type": "string" },
+    { "key": "user_id_brig_alpha",    "value": "",                         "type": "string" },
+    { "key": "user_id_enc_alpha",     "value": "",                         "type": "string" },
+    { "key": "user_id_admin",         "value": "",                         "type": "string" },
+    { "key": "role_id_brigadista",    "value": "",                         "type": "string" },
+    { "key": "role_id_encargado",     "value": "",                         "type": "string" },
+    { "key": "tmp_survey_id",         "value": "",                         "type": "string" },
+    { "key": "tmp_user_id",           "value": "",                         "type": "string" }
+  ],
+  "item": [
+
+    {
+      "name": "🔧 Setup — Admin Login & Discover IDs",
+      "item": [
+        {
+          "name": "Admin Login",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('Admin login 200', () => pm.response.to.have.status(200));",
+            "const t = pm.response.json().access_token;",
+            "pm.expect(t, 'access_token present').to.be.a('string');",
+            "pm.collectionVariables.set('admin_token', t);"
+          ]}}],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": { "mode": "urlencoded", "urlencoded": [
+              { "key": "username", "value": "{{admin_email}}", "type": "text" },
+              { "key": "password", "value": "{{admin_password}}", "type": "text" }
+            ]},
+            "url": { "raw": "{{base_url}}/auth/login", "host": ["{{base_url}}"], "path": ["auth","login"] }
+          }
+        },
+        {
+          "name": "Discover: QA Surveys",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('Surveys list 200', () => pm.response.to.have.status(200));",
+            "const json = pm.response.json();",
+            "const items = Array.isArray(json) ? json : (json.items || json.data || []);",
+            "const qa = items.filter(s => s.title && s.title.startsWith('QA'));",
+            "pm.test('At least 2 QA surveys exist', () => pm.expect(qa.length).to.be.at.least(2));",
+            "if (qa.length >= 1) pm.collectionVariables.set('survey_id_in_scope', String(qa[0].id));",
+            "if (qa.length >= 3) pm.collectionVariables.set('survey_id_out_scope', String(qa[2].id));",
+            "const firstVersion = qa[0] && (qa[0].current_version_id || (qa[0].versions && qa[0].versions[0] && qa[0].versions[0].id));",
+            "if (firstVersion) pm.collectionVariables.set('survey_version_id', String(firstVersion));",
+            "console.log('in_scope=', pm.collectionVariables.get('survey_id_in_scope'),",
+            "           'out_scope=', pm.collectionVariables.get('survey_id_out_scope'));"
+          ]}}],
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": { "raw": "{{base_url}}/admin/surveys/metadata?limit=50", "host": ["{{base_url}}"], "path": ["admin","surveys","metadata"], "query": [{ "key": "limit", "value": "50" }] }
+          }
+        },
+        {
+          "name": "Discover: Users (alpha/beta/admin)",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('Users list 200', () => pm.response.to.have.status(200));",
+            "const json = pm.response.json();",
+            "const users = Array.isArray(json) ? json : (json.items || json.data || []);",
+            "for (const u of users) {",
+            "  if (u.email === 'qa.brigadista.alpha@qa.brigada.com') pm.collectionVariables.set('user_id_brig_alpha', String(u.id));",
+            "  if (u.email === 'qa.encargado.alpha@qa.brigada.com')  pm.collectionVariables.set('user_id_enc_alpha',  String(u.id));",
+            "  if (u.email === pm.collectionVariables.get('admin_email')) pm.collectionVariables.set('user_id_admin', String(u.id));",
+            "}",
+            "console.log('brig_alpha=', pm.collectionVariables.get('user_id_brig_alpha'),",
+            "            'enc_alpha=',  pm.collectionVariables.get('user_id_enc_alpha'),",
+            "            'admin=',      pm.collectionVariables.get('user_id_admin'));"
+          ]}}],
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": { "raw": "{{base_url}}/users?limit=100", "host": ["{{base_url}}"], "path": ["users"], "query": [{ "key": "limit", "value": "100" }] }
+          }
+        },
+        {
+          "name": "Discover: Role IDs (brigadista/encargado)",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('Roles list 200', () => pm.response.to.have.status(200));",
+            "const json = pm.response.json();",
+            "const roles = Array.isArray(json) ? json : (json.items || json.data || []);",
+            "for (const r of roles) {",
+            "  if (r.key === 'brigadista') pm.collectionVariables.set('role_id_brigadista', String(r.id));",
+            "  if (r.key === 'encargado')  pm.collectionVariables.set('role_id_encargado',  String(r.id));",
+            "}",
+            "console.log('brigadista=', pm.collectionVariables.get('role_id_brigadista'),",
+            "            'encargado=',  pm.collectionVariables.get('role_id_encargado'));"
+          ]}}],
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": { "raw": "{{base_url}}/roles", "host": ["{{base_url}}"], "path": ["roles"] }
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "SCEN-01 — Admin Completo (sin bypass is_system)",
+      "item": [
+        {
+          "name": "Login SCEN-01",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('[SCEN-01] Login 200', () => pm.response.to.have.status(200));",
+            "const t = pm.response.json().access_token;",
+            "pm.expect(t, 'access_token must be present').to.be.a('string');",
+            "pm.collectionVariables.set('qa_token', t);"
+          ]}}],
+          "request": {
+            "method": "POST", "header": [],
+            "body": { "mode": "urlencoded", "urlencoded": [
+              { "key": "username", "value": "qa.full.admin@qa.brigada.com" },
+              { "key": "password", "value": "{{qa_password}}" }
+            ]},
+            "url": { "raw": "{{base_url}}/auth/login", "host": ["{{base_url}}"], "path": ["auth","login"] }
+          }
+        },
+        {
+          "name": "GET /admin/surveys → 200",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('[SCEN-01] GET /admin/surveys/metadata is 200', () => pm.response.to.have.status(200));"
+          ]}}],
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{qa_token}}" }],
+            "url": { "raw": "{{base_url}}/admin/surveys/metadata?limit=10", "host": ["{{base_url}}"], "path": ["admin","surveys","metadata"], "query": [{ "key": "limit", "value": "10" }] }
+          }
+        },
+        {
+          "name": "POST /admin/surveys → 201 (create_survey)",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('[SCEN-01] Create survey 201', () => pm.response.to.have.status(201));",
+            "const id = pm.response.json().id;",
+            "if (id) pm.collectionVariables.set('tmp_survey_id', String(id));"
+          ]}}],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{qa_token}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\"title\":\"SCEN01 Postman Tmp\",\"survey_type\":\"normal\"}", "options": { "raw": { "language": "json" } } },
+            "url": { "raw": "{{base_url}}/admin/surveys", "host": ["{{base_url}}"], "path": ["admin","surveys"] }
+          }
+        },
+        {
+          "name": "GET /users → 200 (view_all_users)",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('[SCEN-01] GET /users is 200', () => pm.response.to.have.status(200));"
+          ]}}],
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{qa_token}}" }],
+            "url": { "raw": "{{base_url}}/users?limit=5", "host": ["{{base_url}}"], "path": ["users"], "query": [{ "key": "limit", "value": "5" }] }
+          }
+        },
+        {
+          "name": "Cleanup: DELETE tmp survey (admin)",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('Cleanup: tmp survey deleted', () => pm.expect(pm.response.code).to.be.oneOf([200,204,404]));"
+          ]}}],
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": { "raw": "{{base_url}}/admin/surveys/{{tmp_survey_id}}", "host": ["{{base_url}}"], "path": ["admin","surveys","{{tmp_survey_id}}"] }
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "SCEN-02 — Survey Creator (no publish)",
+      "item": [
+        {
+          "name": "Login SCEN-02",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('[SCEN-02] Login 200', () => pm.response.to.have.status(200));",
+            "pm.collectionVariables.set('qa_token', pm.response.json().access_token);"
+          ]}}],
+          "request": {
+            "method": "POST", "header": [],
+            "body": { "mode": "urlencoded", "urlencoded": [
+              { "key": "username", "value": "qa.survey.creator@qa.brigada.com" },
+              { "key": "password", "value": "{{qa_password}}" }
+            ]},
+            "url": { "raw": "{{base_url}}/auth/login", "host": ["{{base_url}}"], "path": ["auth","login"] }
+          }
+        },
+        {
+          "name": "POST /admin/surveys → 201 (has create_survey)",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('[SCEN-02] Create survey is 201', () => pm.response.to.have.status(201));",
+            "pm.collectionVariables.set('tmp_survey_id', String(pm.response.json().id || ''));"
+          ]}}],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{qa_token}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\"title\":\"SCEN02 Postman Tmp\",\"survey_type\":\"normal\"}", "options": { "raw": { "language": "json" } } },
+            "url": { "raw": "{{base_url}}/admin/surveys", "host": ["{{base_url}}"], "path": ["admin","surveys"] }
+          }
+        },
+        {
+          "name": "POST .../publish → 403 (missing publish_survey)",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('[SCEN-02] Publish is 403 — publish_survey blocked', () => pm.response.to.have.status(403));"
+          ]}}],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{qa_token}}" }],
+            "body": { "mode": "raw", "raw": "{}", "options": { "raw": { "language": "json" } } },
+            "url": { "raw": "{{base_url}}/admin/surveys/{{tmp_survey_id}}/versions/{{survey_version_id}}/publish", "host": ["{{base_url}}"], "path": ["admin","surveys","{{tmp_survey_id}}","versions","{{survey_version_id}}","publish"] }
+          }
+        },
+        {
+          "name": "Cleanup: DELETE tmp survey (admin)",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('Cleanup ok', () => pm.expect(pm.response.code).to.be.oneOf([200,204,404]));"
+          ]}}],
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": { "raw": "{{base_url}}/admin/surveys/{{tmp_survey_id}}", "host": ["{{base_url}}"], "path": ["admin","surveys","{{tmp_survey_id}}"] }
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "SCEN-03 — Survey Publisher (no create/edit)",
+      "item": [
+        {
+          "name": "Login SCEN-03",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('[SCEN-03] Login 200', () => pm.response.to.have.status(200));",
+            "pm.collectionVariables.set('qa_token', pm.response.json().access_token);"
+          ]}}],
+          "request": {
+            "method": "POST", "header": [],
+            "body": { "mode": "urlencoded", "urlencoded": [
+              { "key": "username", "value": "qa.survey.publisher@qa.brigada.com" },
+              { "key": "password", "value": "{{qa_password}}" }
+            ]},
+            "url": { "raw": "{{base_url}}/auth/login", "host": ["{{base_url}}"], "path": ["auth","login"] }
+          }
+        },
+        {
+          "name": "POST /admin/surveys → 403 (missing create_survey)",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('[SCEN-03] POST /admin/surveys is 403', () => pm.response.to.have.status(403));"
+          ]}}],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{qa_token}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\"title\":\"SCEN03 Should Fail\",\"survey_type\":\"normal\"}", "options": { "raw": { "language": "json" } } },
+            "url": { "raw": "{{base_url}}/admin/surveys", "host": ["{{base_url}}"], "path": ["admin","surveys"] }
+          }
+        },
+        {
+          "name": "GET /admin/surveys/metadata → 200 (has view_surveys)",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('[SCEN-03] GET surveys is 200', () => pm.response.to.have.status(200));"
+          ]}}],
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{qa_token}}" }],
+            "url": { "raw": "{{base_url}}/admin/surveys/metadata?limit=5", "host": ["{{base_url}}"], "path": ["admin","surveys","metadata"], "query": [{ "key": "limit", "value": "5" }] }
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "SCEN-04 — Auditor Solo Lectura",
+      "item": [
+        {
+          "name": "Login SCEN-04",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('[SCEN-04] Login 200', () => pm.response.to.have.status(200));",
+            "pm.collectionVariables.set('qa_token', pm.response.json().access_token);"
+          ]}}],
+          "request": {
+            "method": "POST", "header": [],
+            "body": { "mode": "urlencoded", "urlencoded": [
+              { "key": "username", "value": "qa.auditor@qa.brigada.com" },
+              { "key": "password", "value": "{{qa_password}}" }
+            ]},
+            "url": { "raw": "{{base_url}}/auth/login", "host": ["{{base_url}}"], "path": ["auth","login"] }
+          }
+        },
+        {
+          "name": "GET /admin/surveys/metadata → 200",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('[SCEN-04] GET surveys 200', () => pm.response.to.have.status(200));"
+          ]}}],
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{qa_token}}" }],
+            "url": { "raw": "{{base_url}}/admin/surveys/metadata?limit=5", "host": ["{{base_url}}"], "path": ["admin","surveys","metadata"], "query": [{ "key": "limit", "value": "5" }] }
+          }
+        },
+        {
+          "name": "GET /users → 200",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('[SCEN-04] GET /users 200', () => pm.response.to.have.status(200));"
+          ]}}],
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{qa_token}}" }],
+            "url": { "raw": "{{base_url}}/users?limit=5", "host": ["{{base_url}}"], "path": ["users"], "query": [{ "key": "limit", "value": "5" }] }
+          }
+        },
+        {
+          "name": "POST /admin/surveys → 403",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('[SCEN-04] POST /admin/surveys is 403 (auditor cannot write)', () => pm.response.to.have.status(403));"
+          ]}}],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{qa_token}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\"title\":\"SCEN04 Should Fail\"}", "options": { "raw": { "language": "json" } } },
+            "url": { "raw": "{{base_url}}/admin/surveys", "host": ["{{base_url}}"], "path": ["admin","surveys"] }
+          }
+        },
+        {
+          "name": "POST /users → 403",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('[SCEN-04] POST /users is 403 (auditor cannot write)', () => pm.response.to.have.status(403));"
+          ]}}],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{qa_token}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\"email\":\"scen04tmp@qa.brigada.com\",\"full_name\":\"Tmp\",\"password\":\"x\",\"custom_role_id\":1}", "options": { "raw": { "language": "json" } } },
+            "url": { "raw": "{{base_url}}/users", "host": ["{{base_url}}"], "path": ["users"] }
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "SCEN-05 — Brigadista Manager (no manage_assignments)",
+      "item": [
+        {
+          "name": "Login SCEN-05",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('[SCEN-05] Login 200', () => pm.response.to.have.status(200));",
+            "pm.collectionVariables.set('qa_token', pm.response.json().access_token);"
+          ]}}],
+          "request": {
+            "method": "POST", "header": [],
+            "body": { "mode": "urlencoded", "urlencoded": [
+              { "key": "username", "value": "qa.brig.mgr@qa.brigada.com" },
+              { "key": "password", "value": "{{qa_password}}" }
+            ]},
+            "url": { "raw": "{{base_url}}/auth/login", "host": ["{{base_url}}"], "path": ["auth","login"] }
+          }
+        },
+        {
+          "name": "POST /assignments/team (brigadista) → 200/201",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('[SCEN-05] Assign brigadista allowed', () => pm.expect(pm.response.code).to.be.oneOf([200,201]));"
+          ]}}],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{qa_token}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\"survey_ids\":[{{survey_id_in_scope}}],\"user_ids\":[{{user_id_brig_alpha}}],\"target_role\":\"brigadista\",\"group_name\":\"SCEN05 Postman Brig\",\"group_description\":\"test\"}", "options": { "raw": { "language": "json" } } },
+            "url": { "raw": "{{base_url}}/assignments/team", "host": ["{{base_url}}"], "path": ["assignments","team"] }
+          }
+        },
+        {
+          "name": "POST /assignments/team (encargado) → 403",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('[SCEN-05] Assign encargado is 403 — manage_assignments blocked', () => pm.response.to.have.status(403));"
+          ]}}],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{qa_token}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\"survey_ids\":[{{survey_id_in_scope}}],\"user_ids\":[{{user_id_enc_alpha}}],\"target_role\":\"encargado\",\"group_name\":\"SCEN05 Postman Enc\",\"group_description\":\"test\"}", "options": { "raw": { "language": "json" } } },
+            "url": { "raw": "{{base_url}}/assignments/team", "host": ["{{base_url}}"], "path": ["assignments","team"] }
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "SCEN-06 — Scoped Survey Access (allowed_survey_ids)",
+      "item": [
+        {
+          "name": "Login SCEN-06",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('[SCEN-06] Login 200', () => pm.response.to.have.status(200));",
+            "pm.collectionVariables.set('qa_token', pm.response.json().access_token);"
+          ]}}],
+          "request": {
+            "method": "POST", "header": [],
+            "body": { "mode": "urlencoded", "urlencoded": [
+              { "key": "username", "value": "qa.scoped.enc@qa.brigada.com" },
+              { "key": "password", "value": "{{qa_password}}" }
+            ]},
+            "url": { "raw": "{{base_url}}/auth/login", "host": ["{{base_url}}"], "path": ["auth","login"] }
+          }
+        },
+        {
+          "name": "GET /admin/surveys/metadata → exactly 2 items",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('[SCEN-06] GET surveys is 200', () => pm.response.to.have.status(200));",
+            "const json = pm.response.json();",
+            "const items = Array.isArray(json) ? json : (json.items || json.data || []);",
+            "pm.test('[SCEN-06] Exactly 2 surveys in scope', () => pm.expect(items.length).to.equal(2));"
+          ]}}],
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{qa_token}}" }],
+            "url": { "raw": "{{base_url}}/admin/surveys/metadata?limit=50", "host": ["{{base_url}}"], "path": ["admin","surveys","metadata"], "query": [{ "key": "limit", "value": "50" }] }
+          }
+        },
+        {
+          "name": "GET /admin/surveys/{in_scope} → 200",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('[SCEN-06] In-scope survey detail is 200', () => pm.response.to.have.status(200));"
+          ]}}],
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{qa_token}}" }],
+            "url": { "raw": "{{base_url}}/admin/surveys/{{survey_id_in_scope}}", "host": ["{{base_url}}"], "path": ["admin","surveys","{{survey_id_in_scope}}"] }
+          }
+        },
+        {
+          "name": "GET /admin/surveys/{out_of_scope} → 403/404",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('[SCEN-06] Out-of-scope survey is 403 or 404', () => pm.expect(pm.response.code).to.be.oneOf([403,404]));"
+          ]}}],
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{qa_token}}" }],
+            "url": { "raw": "{{base_url}}/admin/surveys/{{survey_id_out_scope}}", "host": ["{{base_url}}"], "path": ["admin","surveys","{{survey_id_out_scope}}"] }
+          }
+        },
+        {
+          "name": "GET /admin/responses?survey_id={out_of_scope} → 403/404",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('[SCEN-06] Responses for out-of-scope survey blocked', () => pm.expect(pm.response.code).to.be.oneOf([403,404]));"
+          ]}}],
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{qa_token}}" }],
+            "url": { "raw": "{{base_url}}/admin/responses?survey_id={{survey_id_out_scope}}", "host": ["{{base_url}}"], "path": ["admin","responses"], "query": [{ "key": "survey_id", "value": "{{survey_id_out_scope}}" }] }
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "SCEN-07 — User Creator (brigadista scope only)",
+      "item": [
+        {
+          "name": "Login SCEN-07",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('[SCEN-07] Login 200', () => pm.response.to.have.status(200));",
+            "pm.collectionVariables.set('qa_token', pm.response.json().access_token);"
+          ]}}],
+          "request": {
+            "method": "POST", "header": [],
+            "body": { "mode": "urlencoded", "urlencoded": [
+              { "key": "username", "value": "qa.user.creator@qa.brigada.com" },
+              { "key": "password", "value": "{{qa_password}}" }
+            ]},
+            "url": { "raw": "{{base_url}}/auth/login", "host": ["{{base_url}}"], "path": ["auth","login"] }
+          }
+        },
+        {
+          "name": "POST /users (brigadista role) → 201",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('[SCEN-07] Create brigadista user is 201', () => pm.response.to.have.status(201));",
+            "pm.collectionVariables.set('tmp_user_id', String(pm.response.json().id || ''));"
+          ]}}],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{qa_token}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\"email\":\"scen07.brig.pm@qa.brigada.com\",\"full_name\":\"SCEN07 Postman Brig\",\"password\":\"QABrigada2026!\",\"custom_role_id\":{{role_id_brigadista}}}", "options": { "raw": { "language": "json" } } },
+            "url": { "raw": "{{base_url}}/users", "host": ["{{base_url}}"], "path": ["users"] }
+          }
+        },
+        {
+          "name": "POST /users (encargado role) → 403",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('[SCEN-07] Create encargado user is 403 — target scope enforced', () => pm.response.to.have.status(403));"
+          ]}}],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{qa_token}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\"email\":\"scen07.enc.pm@qa.brigada.com\",\"full_name\":\"SCEN07 Postman Enc\",\"password\":\"QABrigada2026!\",\"custom_role_id\":{{role_id_encargado}}}", "options": { "raw": { "language": "json" } } },
+            "url": { "raw": "{{base_url}}/users", "host": ["{{base_url}}"], "path": ["users"] }
+          }
+        },
+        {
+          "name": "Cleanup: DELETE tmp user (admin)",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('Cleanup ok', () => pm.expect(pm.response.code).to.be.oneOf([200,204,404]));"
+          ]}}],
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": { "raw": "{{base_url}}/users/{{tmp_user_id}}", "host": ["{{base_url}}"], "path": ["users","{{tmp_user_id}}"] }
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "SCEN-08 — User Editor (brigadista scope only)",
+      "item": [
+        {
+          "name": "Login SCEN-08",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('[SCEN-08] Login 200', () => pm.response.to.have.status(200));",
+            "pm.collectionVariables.set('qa_token', pm.response.json().access_token);"
+          ]}}],
+          "request": {
+            "method": "POST", "header": [],
+            "body": { "mode": "urlencoded", "urlencoded": [
+              { "key": "username", "value": "qa.user.editor@qa.brigada.com" },
+              { "key": "password", "value": "{{qa_password}}" }
+            ]},
+            "url": { "raw": "{{base_url}}/auth/login", "host": ["{{base_url}}"], "path": ["auth","login"] }
+          }
+        },
+        {
+          "name": "GET /users → 200 (view_all_users)",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('[SCEN-08] GET /users 200', () => pm.response.to.have.status(200));"
+          ]}}],
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{qa_token}}" }],
+            "url": { "raw": "{{base_url}}/users?limit=5", "host": ["{{base_url}}"], "path": ["users"], "query": [{ "key": "limit", "value": "5" }] }
+          }
+        },
+        {
+          "name": "PATCH /users/{brigadista_alpha} → 200 (in scope)",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('[SCEN-08] PATCH brigadista is 200', () => pm.response.to.have.status(200));"
+          ]}}],
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Authorization", "value": "Bearer {{qa_token}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\"full_name\":\"QA Brigadista Alpha [SCEN08]\"}","options":{"raw":{"language":"json"}}},
+            "url": { "raw": "{{base_url}}/users/{{user_id_brig_alpha}}", "host": ["{{base_url}}"], "path": ["users","{{user_id_brig_alpha}}"] }
+          }
+        },
+        {
+          "name": "PATCH /users/{encargado_alpha} → 403 (out of scope)",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('[SCEN-08] PATCH encargado is 403 — edit_user_targets enforced', () => pm.response.to.have.status(403));"
+          ]}}],
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Authorization", "value": "Bearer {{qa_token}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\"full_name\":\"SCEN08 Should Fail\"}","options":{"raw":{"language":"json"}}},
+            "url": { "raw": "{{base_url}}/users/{{user_id_enc_alpha}}", "host": ["{{base_url}}"], "path": ["users","{{user_id_enc_alpha}}"] }
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "SCEN-09/11/13/14 — Login Blocked (no CMS access)",
+      "item": [
+        {
+          "name": "SCEN-09: qa_no_cms_access → 401/403",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('[SCEN-09] Login blocked — missing access_cms', () => pm.expect(pm.response.code).to.be.oneOf([401,403]));"
+          ]}}],
+          "request": {
+            "method": "POST", "header": [],
+            "body": { "mode": "urlencoded", "urlencoded": [
+              { "key": "username", "value": "qa.no.cms@qa.brigada.com" },
+              { "key": "password", "value": "{{qa_password}}" }
+            ]},
+            "url": { "raw": "{{base_url}}/auth/login", "host": ["{{base_url}}"], "path": ["auth","login"] }
+          }
+        },
+        {
+          "name": "SCEN-11: qa_zero_perms → 401/403",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('[SCEN-11] Login blocked — permissions=[]', () => pm.expect(pm.response.code).to.be.oneOf([401,403]));"
+          ]}}],
+          "request": {
+            "method": "POST", "header": [],
+            "body": { "mode": "urlencoded", "urlencoded": [
+              { "key": "username", "value": "qa.zero.perms@qa.brigada.com" },
+              { "key": "password", "value": "{{qa_password}}" }
+            ]},
+            "url": { "raw": "{{base_url}}/auth/login", "host": ["{{base_url}}"], "path": ["auth","login"] }
+          }
+        },
+        {
+          "name": "SCEN-13: qa_inactive_role → 401/403",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('[SCEN-13] Login blocked — role is_active=false', () => pm.expect(pm.response.code).to.be.oneOf([401,403]));"
+          ]}}],
+          "request": {
+            "method": "POST", "header": [],
+            "body": { "mode": "urlencoded", "urlencoded": [
+              { "key": "username", "value": "qa.inactive.role@qa.brigada.com" },
+              { "key": "password", "value": "{{qa_password}}" }
+            ]},
+            "url": { "raw": "{{base_url}}/auth/login", "host": ["{{base_url}}"], "path": ["auth","login"] }
+          }
+        },
+        {
+          "name": "SCEN-14: qa_inactive_user → 401/403",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('[SCEN-14] Login blocked — user is_active=false', () => pm.expect(pm.response.code).to.be.oneOf([401,403]));"
+          ]}}],
+          "request": {
+            "method": "POST", "header": [],
+            "body": { "mode": "urlencoded", "urlencoded": [
+              { "key": "username", "value": "qa.inactive.user@qa.brigada.com" },
+              { "key": "password", "value": "{{qa_password}}" }
+            ]},
+            "url": { "raw": "{{base_url}}/auth/login", "host": ["{{base_url}}"], "path": ["auth","login"] }
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "SCEN-10 — Responses Only (no view_surveys)",
+      "item": [
+        {
+          "name": "Login SCEN-10",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('[SCEN-10] Login 200', () => pm.response.to.have.status(200));",
+            "pm.collectionVariables.set('qa_token', pm.response.json().access_token);"
+          ]}}],
+          "request": {
+            "method": "POST", "header": [],
+            "body": { "mode": "urlencoded", "urlencoded": [
+              { "key": "username", "value": "qa.resp.only@qa.brigada.com" },
+              { "key": "password", "value": "{{qa_password}}" }
+            ]},
+            "url": { "raw": "{{base_url}}/auth/login", "host": ["{{base_url}}"], "path": ["auth","login"] }
+          }
+        },
+        {
+          "name": "GET /admin/responses → 200 (has view_responses)",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('[SCEN-10] GET /admin/responses is 200', () => pm.response.to.have.status(200));"
+          ]}}],
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{qa_token}}" }],
+            "url": { "raw": "{{base_url}}/admin/responses?limit=5", "host": ["{{base_url}}"], "path": ["admin","responses"], "query": [{ "key": "limit", "value": "5" }] }
+          }
+        },
+        {
+          "name": "GET /admin/surveys/metadata → 403 (missing view_surveys)",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('[SCEN-10] GET /admin/surveys is 403 — view_surveys blocked', () => pm.response.to.have.status(403));"
+          ]}}],
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{qa_token}}" }],
+            "url": { "raw": "{{base_url}}/admin/surveys/metadata", "host": ["{{base_url}}"], "path": ["admin","surveys","metadata"] }
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "SCEN-12 — Privilege Escalation (wildcard targets)",
+      "item": [
+        {
+          "name": "Login SCEN-12",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('[SCEN-12] Login 200', () => pm.response.to.have.status(200));",
+            "pm.collectionVariables.set('qa_token', pm.response.json().access_token);"
+          ]}}],
+          "request": {
+            "method": "POST", "header": [],
+            "body": { "mode": "urlencoded", "urlencoded": [
+              { "key": "username", "value": "qa.wildcard.mgr@qa.brigada.com" },
+              { "key": "password", "value": "{{qa_password}}" }
+            ]},
+            "url": { "raw": "{{base_url}}/auth/login", "host": ["{{base_url}}"], "path": ["auth","login"] }
+          }
+        },
+        {
+          "name": "GET /users → 200 (view_all_users)",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('[SCEN-12] GET /users 200', () => pm.response.to.have.status(200));"
+          ]}}],
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{qa_token}}" }],
+            "url": { "raw": "{{base_url}}/users?limit=5", "host": ["{{base_url}}"], "path": ["users"], "query": [{ "key": "limit", "value": "5" }] }
+          }
+        },
+        {
+          "name": "🚨 PATCH /users/{admin} → 403 (CRITICAL escalation check)",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('[SCEN-12] 🚨 CRITICAL: PATCH system admin is 403 — wildcard must not reach is_system users', () => {",
+            "  pm.expect(pm.response.code, 'BUG: wildcard targets=[\"*\"] modified the system admin — privilege escalation!').to.equal(403);",
+            "});"
+          ]}}],
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Authorization", "value": "Bearer {{qa_token}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\"full_name\":\"SCEN12 Wildcard Escalation\"}","options":{"raw":{"language":"json"}}},
+            "url": { "raw": "{{base_url}}/users/{{user_id_admin}}", "host": ["{{base_url}}"], "path": ["users","{{user_id_admin}}"] }
+          }
+        },
+        {
+          "name": "🚨 DELETE /users/{admin} → 403 (CRITICAL escalation check)",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('[SCEN-12] 🚨 CRITICAL: DELETE system admin is 403', () => {",
+            "  pm.expect(pm.response.code, 'BUG: wildcard targets=[\"*\"] deleted the system admin!').to.equal(403);",
+            "});"
+          ]}}],
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{qa_token}}" }],
+            "url": { "raw": "{{base_url}}/users/{{user_id_admin}}", "host": ["{{base_url}}"], "path": ["users","{{user_id_admin}}"] }
+          }
+        },
+        {
+          "name": "POST /roles → 403 (no manage_access_control)",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('[SCEN-12] POST /roles is 403', () => pm.response.to.have.status(403));"
+          ]}}],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{qa_token}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\"key\":\"scen12_esc_test\",\"display_name\":\"SCEN12 Esc\",\"permissions\":[]}","options":{"raw":{"language":"json"}}},
+            "url": { "raw": "{{base_url}}/roles", "host": ["{{base_url}}"], "path": ["roles"] }
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "SCEN-15 — Brigadista Data Isolation (mobile API)",
+      "item": [
+        {
+          "name": "Login SCEN-15A (brig.alpha)",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('[SCEN-15A] Login alpha 200', () => pm.response.to.have.status(200));",
+            "pm.collectionVariables.set('qa_token', pm.response.json().access_token);"
+          ]}}],
+          "request": {
+            "method": "POST", "header": [],
+            "body": { "mode": "urlencoded", "urlencoded": [
+              { "key": "username", "value": "qa.brigadista.alpha@qa.brigada.com" },
+              { "key": "password", "value": "{{qa_password}}" }
+            ]},
+            "url": { "raw": "{{base_url}}/auth/login", "host": ["{{base_url}}"], "path": ["auth","login"] }
+          }
+        },
+        {
+          "name": "GET /mobile/assignments (alpha) → 200",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('[SCEN-15A] Alpha GET /mobile/assignments 200', () => pm.response.to.have.status(200));",
+            "const json = pm.response.json();",
+            "const items = Array.isArray(json) ? json : (json.items || json.data || []);",
+            "pm.test('[SCEN-15A] Alpha sees at least 1 assignment', () => pm.expect(items.length).to.be.at.least(1));"
+          ]}}],
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{qa_token}}" }],
+            "url": { "raw": "{{base_url}}/mobile/assignments", "host": ["{{base_url}}"], "path": ["mobile","assignments"] }
+          }
+        },
+        {
+          "name": "Login SCEN-15B (brig.beta)",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('[SCEN-15B] Login beta 200', () => pm.response.to.have.status(200));",
+            "pm.collectionVariables.set('qa_token', pm.response.json().access_token);"
+          ]}}],
+          "request": {
+            "method": "POST", "header": [],
+            "body": { "mode": "urlencoded", "urlencoded": [
+              { "key": "username", "value": "qa.brigadista.beta@qa.brigada.com" },
+              { "key": "password", "value": "{{qa_password}}" }
+            ]},
+            "url": { "raw": "{{base_url}}/auth/login", "host": ["{{base_url}}"], "path": ["auth","login"] }
+          }
+        },
+        {
+          "name": "GET /mobile/responses (beta) — must not contain alpha data",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('[SCEN-15B] Beta GET /mobile/responses 200', () => pm.response.to.have.status(200));",
+            "const json = pm.response.json();",
+            "const items = Array.isArray(json) ? json : (json.items || json.data || []);",
+            "const alphaEmail = 'qa.brigadista.alpha@qa.brigada.com';",
+            "const hasAlphaData = items.some(r => r.user_email === alphaEmail || r.submitted_by === alphaEmail);",
+            "pm.test('[SCEN-15B] Beta responses do NOT contain alpha data', () => pm.expect(hasAlphaData).to.be.false);"
+          ]}}],
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{qa_token}}" }],
+            "url": { "raw": "{{base_url}}/mobile/responses?limit=50", "host": ["{{base_url}}"], "path": ["mobile","responses"], "query": [{ "key": "limit", "value": "50" }] }
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "SCEN-16 — Encargado Scope Isolation",
+      "item": [
+        {
+          "name": "Login SCEN-16A (enc.alpha)",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('[SCEN-16A] Login alpha 200', () => pm.response.to.have.status(200));",
+            "pm.collectionVariables.set('qa_token', pm.response.json().access_token);"
+          ]}}],
+          "request": {
+            "method": "POST", "header": [],
+            "body": { "mode": "urlencoded", "urlencoded": [
+              { "key": "username", "value": "qa.encargado.alpha@qa.brigada.com" },
+              { "key": "password", "value": "{{qa_password}}" }
+            ]},
+            "url": { "raw": "{{base_url}}/auth/login", "host": ["{{base_url}}"], "path": ["auth","login"] }
+          }
+        },
+        {
+          "name": "GET /assignments/groups (alpha) — only Alpha group visible",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('[SCEN-16A] GET /assignments/groups 200', () => pm.response.to.have.status(200));",
+            "const json = pm.response.json();",
+            "const items = Array.isArray(json) ? json : (json.items || json.data || []);",
+            "const names = items.map(g => g.name || '');",
+            "pm.test('[SCEN-16A] Alpha group is visible', () => pm.expect(names.some(n => n.includes('Alpha'))).to.be.true);",
+            "pm.test('[SCEN-16A] Beta group is NOT visible', () => pm.expect(names.some(n => n.includes('Beta') && !n.includes('Alpha'))).to.be.false);"
+          ]}}],
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{qa_token}}" }],
+            "url": { "raw": "{{base_url}}/assignments/groups?limit=50", "host": ["{{base_url}}"], "path": ["assignments","groups"], "query": [{ "key": "limit", "value": "50" }] }
+          }
+        },
+        {
+          "name": "GET /assignments/groups/17 (beta group) → 403/404",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('[SCEN-16A] Alpha accessing Beta group is 403 or 404', () => pm.expect(pm.response.code).to.be.oneOf([403,404]));"
+          ]}}],
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{qa_token}}" }],
+            "url": { "raw": "{{base_url}}/assignments/groups/17", "host": ["{{base_url}}"], "path": ["assignments","groups","17"] }
+          }
+        },
+        {
+          "name": "Login SCEN-16B (enc.beta)",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('[SCEN-16B] Login beta 200', () => pm.response.to.have.status(200));",
+            "pm.collectionVariables.set('qa_token', pm.response.json().access_token);"
+          ]}}],
+          "request": {
+            "method": "POST", "header": [],
+            "body": { "mode": "urlencoded", "urlencoded": [
+              { "key": "username", "value": "qa.encargado.beta@qa.brigada.com" },
+              { "key": "password", "value": "{{qa_password}}" }
+            ]},
+            "url": { "raw": "{{base_url}}/auth/login", "host": ["{{base_url}}"], "path": ["auth","login"] }
+          }
+        },
+        {
+          "name": "GET /assignments/groups/16 (alpha group) → 403/404",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('[SCEN-16B] Beta accessing Alpha group is 403 or 404', () => pm.expect(pm.response.code).to.be.oneOf([403,404]));"
+          ]}}],
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{qa_token}}" }],
+            "url": { "raw": "{{base_url}}/assignments/groups/16", "host": ["{{base_url}}"], "path": ["assignments","groups","16"] }
+          }
+        }
+      ]
+    }
+
+  ]
+}

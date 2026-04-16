@@ -1,0 +1,131 @@
+---
+# permission-encargado-scope.yaml
+# SCEN-16 — Scope isolation between two encargados with separate groups
+#
+# Scenario:
+#   qa.encargado.alpha → "QA — Grupo Alpha" (id=16)
+#   qa.encargado.beta  → "QA — Grupo Beta"  (id=17)
+#   Each encargado must see ONLY their own group.
+#   Accessing the other's group must be blocked.
+#
+# What this flow tests:
+#   1. Alpha sees "QA — Grupo Alpha" in their group list.
+#   2. Alpha does NOT see "QA — Grupo Beta".
+#   3. Beta sees "QA — Grupo Beta" but NOT "QA — Grupo Alpha".
+#
+# Prereqs:
+#   - Groups 16 and 17 exist (run seed_qa_permissions.py)
+#   - App is installed; encargado role has a groups/assignments view
+#
+# Run:
+#   maestro test tests/maestro/permission-encargado-scope.yaml
+#   maestro test --env TEST_ENC_ALPHA_EMAIL=qa.encargado.alpha@qa.brigada.com \
+#                    TEST_ENC_BETA_EMAIL=qa.encargado.beta@qa.brigada.com \
+#                    QA_PASSWORD=QABrigada2026! \
+#                tests/maestro/permission-encargado-scope.yaml
+
+appId: com.brigadadigital.app
+
+---
+
+# ── Phase 1: Encargado Alpha ──────────────────────────────────────────────
+
+- launchApp:
+    clearState: true
+
+- tapOn:
+    text: "Correo electrónico"
+- inputText: "${TEST_ENC_ALPHA_EMAIL:-qa.encargado.alpha@qa.brigada.com}"
+
+- tapOn:
+    text: "Contraseña"
+- inputText: "${QA_PASSWORD:-QABrigada2026!}"
+- hideKeyboard
+
+- tapOn:
+    text: "INICIAR SESIÓN"
+
+- waitForAnimationToEnd:
+    timeout: 15000
+
+# Encargado home should show their group(s)
+- assertVisible: "QA — Grupo Alpha"
+
+# SCEN-16 KEY ASSERTION: Beta's group must NOT appear in Alpha's view
+- assertNotVisible:
+    text: "QA — Grupo Beta"
+
+# Navigate into the group to confirm it's Alpha's data
+- tapOn:
+    text: "QA — Grupo Alpha"
+
+- waitForAnimationToEnd:
+    timeout: 5000
+
+# Alpha's group has brigadista.alpha assigned
+- assertVisible: "QA Brigadista Alpha"
+
+# Back to home
+- tapOn:
+    id: "back-button"
+
+- optional:
+    - tapOn:
+        text: "Atrás"
+    - tapOn:
+        text: "Volver"
+
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# Log out Alpha
+- tapOn:
+    id: "profile-tab"
+
+- optional:
+    - tapOn:
+        text: "Cerrar sesión"
+    - tapOn:
+        text: "Salir"
+
+- waitForAnimationToEnd:
+    timeout: 5000
+
+# ── Phase 2: Encargado Beta ────────────────────────────────────────────────
+
+- launchApp:
+    clearState: true
+
+- tapOn:
+    text: "Correo electrónico"
+- inputText: "${TEST_ENC_BETA_EMAIL:-qa.encargado.beta@qa.brigada.com}"
+
+- tapOn:
+    text: "Contraseña"
+- inputText: "${QA_PASSWORD:-QABrigada2026!}"
+- hideKeyboard
+
+- tapOn:
+    text: "INICIAR SESIÓN"
+
+- waitForAnimationToEnd:
+    timeout: 15000
+
+# SCEN-16 KEY ASSERTION: Beta sees their group, NOT Alpha's
+- assertVisible: "QA — Grupo Beta"
+- assertNotVisible:
+    text: "QA — Grupo Alpha"
+
+# Navigate into Beta's group
+- tapOn:
+    text: "QA — Grupo Beta"
+
+- waitForAnimationToEnd:
+    timeout: 5000
+
+# Beta's group has brigadista.beta assigned
+- assertVisible: "QA Brigadista Beta"
+
+# Confirm Alpha's brigadista is NOT in Beta's group view
+- assertNotVisible:
+    text: "QA Brigadista Alpha"

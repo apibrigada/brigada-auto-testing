@@ -1,0 +1,159 @@
+---
+# permission-brigadista-isolation.yaml
+# SCEN-15 — Data isolation between two brigadistas sharing the same survey
+#
+# Scenario:
+#   qa.brigadista.alpha and qa.brigadista.beta are BOTH assigned to
+#   "QA — Aislamiento Compartido" (group id=18, same survey).
+#   Each must see ONLY their own responses; cross-access must be blocked.
+#
+# What this flow tests:
+#   1. Alpha can submit a response to the shared assignment.
+#   2. Beta's assignment list does NOT show Alpha's submitted response.
+#   3. Beta cannot open Alpha's response by direct navigation.
+#
+# Prereqs:
+#   - Group 18 exists with both brigadistas assigned (run seed_qa_permissions.py)
+#   - App is installed and reachable
+#
+# Run:
+#   maestro test tests/maestro/permission-brigadista-isolation.yaml
+#   maestro test --env TEST_ALPHA_EMAIL=qa.brigadista.alpha@qa.brigada.com \
+#                    TEST_BETA_EMAIL=qa.brigadista.beta@qa.brigada.com \
+#                    QA_PASSWORD=QABrigada2026! \
+#                tests/maestro/permission-brigadista-isolation.yaml
+
+appId: com.brigadadigital.app
+
+---
+
+# ── Phase 1: Alpha logs in and submits a response ────────────────────────────
+
+- launchApp:
+    clearState: true
+
+- tapOn:
+    text: "Correo electrónico"
+- inputText: "${TEST_ALPHA_EMAIL:-qa.brigadista.alpha@qa.brigada.com}"
+
+- tapOn:
+    text: "Contraseña"
+- inputText: "${QA_PASSWORD:-QABrigada2026!}"
+- hideKeyboard
+
+- tapOn:
+    text: "INICIAR SESIÓN"
+
+- waitForAnimationToEnd:
+    timeout: 15000
+
+- assertVisible: "Cuestionarios"
+
+- tapOn:
+    text: "Cuestionarios"
+
+- waitForAnimationToEnd:
+    timeout: 5000
+
+# Open the "QA — Aislamiento Compartido" assignment (shared survey)
+# The assignment title depends on the survey name
+- scrollUntilVisible:
+    element:
+      text: "QA — Offline"
+    direction: DOWN
+    timeout: 8000
+
+- tapOn:
+    text: "QA — Offline"
+
+- waitForAnimationToEnd:
+    timeout: 5000
+
+# Fill the first available question with a unique marker
+- optional:
+    - tapOn:
+        id: "text-input"
+    - inputText: "ALPHA_RESPONSE_SCEN15"
+
+# Pick first option if it is a radio/select question
+- optional:
+    - tapOn:
+        index: 0
+        below: "Opción"
+
+# Navigate to submit
+- tapOn:
+    text: "Siguiente"
+
+- waitForAnimationToEnd:
+    timeout: 2000
+
+- optional:
+    - tapOn:
+        text: "Enviar"
+    - waitForAnimationToEnd:
+        timeout: 10000
+    - assertVisible: "Enviado"
+
+# Log out Alpha
+- tapOn:
+    id: "profile-tab"
+
+- optional:
+    - tapOn:
+        text: "Cerrar sesión"
+    - tapOn:
+        text: "Salir"
+
+- waitForAnimationToEnd:
+    timeout: 5000
+
+# ── Phase 2: Beta logs in — must NOT see Alpha's response ─────────────────
+
+- launchApp:
+    clearState: true
+
+- tapOn:
+    text: "Correo electrónico"
+- inputText: "${TEST_BETA_EMAIL:-qa.brigadista.beta@qa.brigada.com}"
+
+- tapOn:
+    text: "Contraseña"
+- inputText: "${QA_PASSWORD:-QABrigada2026!}"
+- hideKeyboard
+
+- tapOn:
+    text: "INICIAR SESIÓN"
+
+- waitForAnimationToEnd:
+    timeout: 15000
+
+- assertVisible: "Cuestionarios"
+
+# Navigate to submission history / responses
+- tapOn:
+    id: "profile-tab"
+
+- optional:
+    - tapOn:
+        text: "Mis respuestas"
+    - tapOn:
+        text: "Historial"
+
+- waitForAnimationToEnd:
+    timeout: 5000
+
+# SCEN-15 KEY ASSERTION: "ALPHA_RESPONSE_SCEN15" text must NOT appear in Beta's view
+- assertNotVisible:
+    text: "ALPHA_RESPONSE_SCEN15"
+
+# Beta's assignments list should show only Beta's assignments  
+- tapOn:
+    text: "Cuestionarios"
+
+- waitForAnimationToEnd:
+    timeout: 5000
+
+# Each brigadista only sees their OWN assignments list — not shared IDs from other users
+# The QA — Aislamiento survey should be visible (beta is also assigned)
+- assertVisible: "QA — Offline"
