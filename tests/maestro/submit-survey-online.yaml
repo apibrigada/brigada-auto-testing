@@ -1,0 +1,97 @@
+---
+# submit-survey-online.yaml
+# Maestro flow: Login → navigate to Cuestionarios → open first active survey →
+#               fill a text question → submit → assert confirmation
+#
+# Prerequisites:
+#   - At least one active assignment with a published survey version
+#   - Network connectivity (online submit path)
+#   - Valid brigadista credentials
+#
+# Run:
+#   maestro test tests/maestro/submit-survey-online.yaml
+
+appId: com.brigadadigital.app
+
+---
+- launchApp:
+    clearState: false   # reuse existing session if available
+
+# If auth session expired, handle login
+- optional:
+    - assertVisible: "INICIAR SESIÓN"
+    - tapOn:
+        text: "Correo electrónico"
+    - inputText: "${TEST_EMAIL:-brigadista@example.com}"
+    - tapOn:
+        text: "Contraseña"
+    - inputText: "${TEST_PASSWORD:-testpassword123}"
+    - hideKeyboard
+    - tapOn: "INICIAR SESIÓN"
+    - waitForAnimationToEnd:
+        timeout: 15000
+
+# Navigate to the questionnaires / assignments screen
+- tapOn:
+    text: "Cuestionarios"
+
+- waitForAnimationToEnd:
+    timeout: 5000
+
+# Assert the questionnaires list screen is shown
+- assertVisible: "Tus asignaciones"
+
+# Find and tap the first active assignment card
+# The card shows the survey title followed by date/state info
+# We look for text in an active section ("Activas")
+- optional:
+    - tapOn: "Activas"    # ScrollTo section if needed
+    - waitForAnimationToEnd
+
+# Tap the first survey card that can be opened
+# Active cards show a play / fill button
+- tapOn:
+    index: 0   # first item in the list
+
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# Assert the survey fill screen loaded — header shows survey title or "Pregunta 1"
+- assertTrue:
+    condition: "${visible('Siguiente') || visible('Pregunta') || visible('Enviar')}"
+    label: "Survey fill screen should be loaded"
+
+# Fill the first question — it may be text, single-choice, or multiple-choice
+# For text: type into the visible input
+- optional:
+    - tapOn:
+        id: "text-input"
+    - inputText: "Respuesta de prueba E2E"
+
+# If a radio/checkbox option is visible, tap the first one
+- optional:
+    - tapOn:
+        index: 0
+        below: "Opción"
+
+# Navigate through all questions by tapping "Siguiente" until "Enviar" appears
+- repeat:
+    times: 20   # max number of questions to advance through
+    commands:
+      - optional:
+          - tapOn: "Siguiente"
+          - waitForAnimationToEnd:
+              timeout: 2000
+
+# Tap submit button
+- tapOn: "Enviar"
+
+- waitForAnimationToEnd:
+    timeout: 20000
+
+# Assert success state — either a success banner or a "synced" status appears
+- assertTrue:
+    condition: >
+      ${visible('Enviada') || visible('Sincronizada') || visible('Respuesta guardada') ||
+        visible('✓') || visible('ping') || visible('Pendiente de sincronizar')}
+    label: "Survey should be submitted or queued for sync"

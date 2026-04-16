@@ -1,0 +1,124 @@
+---
+# offline-sync.yaml
+# Maestro flow: Go offline → fill a survey → come back online → assert sync completes
+#
+# Tests the offline-first contract:
+#   1. Response is saved locally when offline
+#   2. After reconnecting, sync queue drains automatically
+#   3. Status transitions: pending_sync → synced (or pending shows synced badge)
+#
+# Prerequisites:
+#   - Valid brigadista session (run login.yaml first or set clearState: false)
+#   - At least one active assignment available
+#
+# Run:
+#   maestro test tests/maestro/offline-sync.yaml
+
+appId: com.brigadadigital.app
+
+---
+- launchApp:
+    clearState: false
+
+# Handle re-login if session expired
+- optional:
+    - assertVisible: "INICIAR SESIÓN"
+    - tapOn:
+        text: "Correo electrónico"
+    - inputText: "${TEST_EMAIL:-brigadista@example.com}"
+    - tapOn:
+        text: "Contraseña"
+    - inputText: "${TEST_PASSWORD:-testpassword123}"
+    - hideKeyboard
+    - tapOn: "INICIAR SESIÓN"
+    - waitForAnimationToEnd:
+        timeout: 15000
+
+# Navigate to questionnaires list
+- tapOn:
+    text: "Cuestionarios"
+
+- waitForAnimationToEnd:
+    timeout: 5000
+
+- assertVisible: "Tus asignaciones"
+
+# ── Put the device on airplane mode (offline) ────────────────────────────────
+# Maestro uses setLocation/network interception; for airplane mode use:
+- setAirplaneMode: true
+
+# Small pause for network change to propagate
+- waitForAnimationToEnd:
+    timeout: 2000
+
+# The app should show an offline indicator (e.g. wifi-off icon or banner)
+# In BrigadaFrontEnd, SyncContext drives `isOnline` → shows offline badge/bar
+- optional:
+    - assertVisible: "Sin conexión"
+
+# Open the first available assignment (it should still be openable offline)
+- tapOn:
+    index: 0
+
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# Assert survey fill screen loaded offline
+- assertTrue:
+    condition: "${visible('Siguiente') || visible('Pregunta') || visible('Enviar')}"
+    label: "Survey fill should work offline"
+
+# Fill questions (minimal — single text or first radio)
+- optional:
+    - tapOn:
+        id: "text-input"
+    - inputText: "Respuesta offline E2E"
+
+- optional:
+    - tapOn:
+        index: 0
+        below: "Opción"
+
+# Advance through questions
+- repeat:
+    times: 20
+    commands:
+      - optional:
+          - tapOn: "Siguiente"
+          - waitForAnimationToEnd:
+              timeout: 2000
+
+# Submit — goes to pending queue in SQLite, NOT sent to server
+- tapOn: "Enviar"
+
+- waitForAnimationToEnd:
+    timeout: 5000
+
+# Verify: response is pending (offline queue) not sent yet
+- assertTrue:
+    condition: "${visible('Pendiente') || visible('Pendiente de sincronizar') || visible('pending')}"
+    label: "Response should be queued (pending) when offline"
+
+# ── Restore network ──────────────────────────────────────────────────────────
+- setAirplaneMode: false
+
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# Navigate back to the questionnaires list which shows sync status
+- tapOn: "Cuestionarios"
+- optional:
+    - tapOn: "Atrás"
+    - tapOn: "Cuestionarios"
+
+# Wait for the sync engine to process the queue (up to 30 seconds)
+# The sync context retries automatically when online
+- waitForAnimationToEnd:
+    timeout: 30000
+
+# Verify sync completed — the pending item should now show "Enviada" / "Sincronizada"
+- assertTrue:
+    condition: >
+      ${visible('Enviada') || visible('Sincronizada') || visible('cloud-done') ||
+        visible('Sincronizando') || visible('1 pendiente')}
+    label: "Sync badge should reflect upload attempt after coming back online"

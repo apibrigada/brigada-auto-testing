@@ -1,0 +1,54 @@
+---
+# login.yaml
+# Maestro flow: App launch → enter credentials → assert home screen visible
+#
+# Prerequisites:
+#   - App installed on emulator/device
+#   - Valid brigadista credentials in device's env or hardcoded below
+#   - Replace TEST_EMAIL / TEST_PASSWORD with actual test account credentials
+#
+# Run:
+#   maestro test tests/maestro/login.yaml
+
+appId: com.brigadadigital.app  # replace with actual package name if different
+
+---
+- launchApp:
+    clearState: true
+
+# Wait for the welcome/splash screen to finish loading
+- waitForAnimationToEnd:
+    timeout: 5000
+
+# Tap "Iniciar sesión" if welcome screen is shown first
+- optional:
+    - tapOn: "Iniciar sesión"
+
+# Verify login form is visible
+- assertVisible: "Correo electrónico"
+
+# Enter email
+- tapOn:
+    text: "Correo electrónico"
+- inputText: "${TEST_EMAIL:-brigadista@example.com}"
+
+# Enter password
+- tapOn:
+    text: "Contraseña"
+- inputText: "${TEST_PASSWORD:-testpassword123}"
+
+# Dismiss keyboard
+- hideKeyboard
+
+# Tap the login button
+- tapOn: "INICIAR SESIÓN"
+
+# Wait for home screen — network request completes
+- waitForAnimationToEnd:
+    timeout: 15000
+
+# Assert we are on the home/dashboard screen
+# The brigadista home shows the user's assignments section or bottom nav
+- assertTrue:
+    condition: "${visible('Cuestionarios') || visible('Encuestas') || visible('Inicio')}"
+    label: "Dashboard should be visible after successful login"
