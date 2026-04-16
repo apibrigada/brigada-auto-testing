@@ -73,12 +73,18 @@ test.describe("SCEN-04 — Auditor Solo Lectura: reads ✓ writes ✗", () => {
     await page.waitForLoadState("networkidle");
 
     // Write action buttons must be absent
-    await expect(page.getByRole("button", { name: /nueva encuesta/i })).toHaveCount(0);
-    await expect(page.getByRole("button", { name: /publicar/i })).toHaveCount(0);
+    await expect(
+      page.getByRole("button", { name: /nueva encuesta/i }),
+    ).toHaveCount(0);
+    await expect(page.getByRole("button", { name: /publicar/i })).toHaveCount(
+      0,
+    );
 
     await page.goto("/dashboard/users");
     await page.waitForLoadState("networkidle");
-    await expect(page.getByRole("button", { name: /invitar|crear usuario/i })).toHaveCount(0);
+    await expect(
+      page.getByRole("button", { name: /invitar|crear usuario/i }),
+    ).toHaveCount(0);
   });
 });
 
@@ -102,10 +108,12 @@ test.describe("SCEN-07 — User Creator (brigadista scope only)", () => {
     });
     if (adminToken) {
       const { json } = await apiGet(request, "/roles", adminToken);
-      const roles = Array.isArray(json) ? json : ((json as Record<string, unknown>)?.items ?? []) as unknown[];
+      const roles = Array.isArray(json)
+        ? json
+        : (((json as Record<string, unknown>)?.items ?? []) as unknown[]);
       for (const r of roles as { key: string; id: number }[]) {
         if (r.key === "brigadista") brigadistaRoleId = r.id;
-        if (r.key === "encargado")  encargadoRoleId  = r.id;
+        if (r.key === "encargado") encargadoRoleId = r.id;
       }
     }
   });
@@ -133,7 +141,9 @@ test.describe("SCEN-07 — User Creator (brigadista scope only)", () => {
     expect(status).toBe(403);
   });
 
-  test("CMS UI: role selector only shows brigadista options", async ({ page }) => {
+  test("CMS UI: role selector only shows brigadista options", async ({
+    page,
+  }) => {
     const { email, password } = QA_CREDS.SCEN07;
     const lp = new LoginPage(page);
     await lp.login({ label: "SCEN-07", email, password });
@@ -142,8 +152,10 @@ test.describe("SCEN-07 — User Creator (brigadista scope only)", () => {
     await page.waitForLoadState("networkidle");
 
     // Open create-user dialog/form
-    const createBtn = page.getByRole("button", { name: /invitar|nuevo usuario|crear usuario/i }).first();
-    if (await createBtn.count() === 0) {
+    const createBtn = page
+      .getByRole("button", { name: /invitar|nuevo usuario|crear usuario/i })
+      .first();
+    if ((await createBtn.count()) === 0) {
       test.skip(true, "Create user button not found — check CMS route");
       return;
     }
@@ -151,11 +163,16 @@ test.describe("SCEN-07 — User Creator (brigadista scope only)", () => {
     await page.waitForLoadState("networkidle");
 
     // The role dropdown must not contain "encargado" or "admin" system roles
-    const roleDropdown = page.getByRole("combobox").filter({ hasText: /rol|role/i }).first();
-    if (await roleDropdown.count() === 0) return; // selector not visible, skip UI assertion
+    const roleDropdown = page
+      .getByRole("combobox")
+      .filter({ hasText: /rol|role/i })
+      .first();
+    if ((await roleDropdown.count()) === 0) return; // selector not visible, skip UI assertion
 
     await roleDropdown.click();
-    await expect(page.getByRole("option", { name: /encargado/i })).toHaveCount(0);
+    await expect(page.getByRole("option", { name: /encargado/i })).toHaveCount(
+      0,
+    );
     await expect(page.getByRole("option", { name: /admin/i })).toHaveCount(0);
   });
 
@@ -186,27 +203,48 @@ test.describe("SCEN-08 — User Editor (brigadista scope only)", () => {
     token = t!;
 
     // Discover user IDs via API (has view_all_users)
-    const { json } = await apiGet(request, "/users", token, { search: "qa.brigadista.alpha", limit: "5" });
-    const users = Array.isArray(json) ? json : ((json as Record<string, unknown>)?.items ?? []) as unknown[];
-    brigadistaAlphaId = (users as { email: string; id: number }[])
-      .find((u) => u.email === QA_CREDS.BRIG_ALPHA.email)?.id;
+    const { json } = await apiGet(request, "/users", token, {
+      search: "qa.brigadista.alpha",
+      limit: "5",
+    });
+    const users = Array.isArray(json)
+      ? json
+      : (((json as Record<string, unknown>)?.items ?? []) as unknown[]);
+    brigadistaAlphaId = (users as { email: string; id: number }[]).find(
+      (u) => u.email === QA_CREDS.BRIG_ALPHA.email,
+    )?.id;
 
-    const { json: json2 } = await apiGet(request, "/users", token, { search: "qa.encargado.alpha", limit: "5" });
-    const users2 = Array.isArray(json2) ? json2 : ((json2 as Record<string, unknown>)?.items ?? []) as unknown[];
-    encargadoAlphaId = (users2 as { email: string; id: number }[])
-      .find((u) => u.email === QA_CREDS.ENC_ALPHA.email)?.id;
+    const { json: json2 } = await apiGet(request, "/users", token, {
+      search: "qa.encargado.alpha",
+      limit: "5",
+    });
+    const users2 = Array.isArray(json2)
+      ? json2
+      : (((json2 as Record<string, unknown>)?.items ?? []) as unknown[]);
+    encargadoAlphaId = (users2 as { email: string; id: number }[]).find(
+      (u) => u.email === QA_CREDS.ENC_ALPHA.email,
+    )?.id;
   });
 
-  test("API: GET /users → 200 (view_all_users present)", async ({ request }) => {
+  test("API: GET /users → 200 (view_all_users present)", async ({
+    request,
+  }) => {
     const { status } = await apiGet(request, "/users", token);
     expect(status).toBe(200);
   });
 
-  test("API: PATCH /users/{brigadista_id} → 200 (in scope)", async ({ request }) => {
+  test("API: PATCH /users/{brigadista_id} → 200 (in scope)", async ({
+    request,
+  }) => {
     test.skip(!brigadistaAlphaId, "brigadista.alpha user ID not found");
-    const { status } = await apiPatch(request, `/users/${brigadistaAlphaId}`, token, {
-      full_name: "QA Brigadista Alpha [SCEN08 e2e]",
-    });
+    const { status } = await apiPatch(
+      request,
+      `/users/${brigadistaAlphaId}`,
+      token,
+      {
+        full_name: "QA Brigadista Alpha [SCEN08 e2e]",
+      },
+    );
     expect(status).toBe(200);
 
     // Revert
@@ -215,22 +253,38 @@ test.describe("SCEN-08 — User Editor (brigadista scope only)", () => {
     });
   });
 
-  test("API: PATCH /users/{encargado_id} → 403 (out of scope)", async ({ request }) => {
+  test("API: PATCH /users/{encargado_id} → 403 (out of scope)", async ({
+    request,
+  }) => {
     test.skip(!encargadoAlphaId, "encargado.alpha user ID not found");
-    const { status } = await apiPatch(request, `/users/${encargadoAlphaId}`, token, {
-      full_name: "SCEN08 Should Fail",
-    });
+    const { status } = await apiPatch(
+      request,
+      `/users/${encargadoAlphaId}`,
+      token,
+      {
+        full_name: "SCEN08 Should Fail",
+      },
+    );
     expect(status).toBe(403);
   });
 
-  test("API: DELETE /users/{brigadista_id} → 403 (no delete_user)", async ({ request }) => {
+  test("API: DELETE /users/{brigadista_id} → 403 (no delete_user)", async ({
+    request,
+  }) => {
     test.skip(!brigadistaAlphaId, "brigadista.alpha user ID not found");
-    const { status } = await apiGet(request, `/users/${brigadistaAlphaId}`, token);
+    const { status } = await apiGet(
+      request,
+      `/users/${brigadistaAlphaId}`,
+      token,
+    );
     // Just check they can see the user (GET) but verify no DELETE
     expect(status).toBe(200);
-    const deleteStatus = await request.delete(`${API_BASE_URL}/users/${brigadistaAlphaId}`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
+    const deleteStatus = await request.delete(
+      `${API_BASE_URL}/users/${brigadistaAlphaId}`,
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      },
+    );
     expect(deleteStatus.status()).toBe(403);
   });
 });

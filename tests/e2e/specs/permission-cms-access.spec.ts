@@ -16,15 +16,18 @@ import { QA_CREDS, getApiToken } from "../fixtures/qa-credentials.js";
 
 // Users that must never reach the CMS dashboard
 const BLOCKED = [
-  { id: "SCEN-09", reason: "missing access_cms",   ...QA_CREDS.SCEN09 },
-  { id: "SCEN-11", reason: "permissions=[]",        ...QA_CREDS.SCEN11 },
-  { id: "SCEN-13", reason: "role is_active=false",  ...QA_CREDS.SCEN13 },
-  { id: "SCEN-14", reason: "user is_active=false",  ...QA_CREDS.SCEN14 },
+  { id: "SCEN-09", reason: "missing access_cms", ...QA_CREDS.SCEN09 },
+  { id: "SCEN-11", reason: "permissions=[]", ...QA_CREDS.SCEN11 },
+  { id: "SCEN-13", reason: "role is_active=false", ...QA_CREDS.SCEN13 },
+  { id: "SCEN-14", reason: "user is_active=false", ...QA_CREDS.SCEN14 },
 ];
 
 test.describe("CMS access — login blocked", () => {
   for (const user of BLOCKED) {
-    test(`${user.id} — login rejected (${user.reason})`, async ({ page, request }) => {
+    test(`${user.id} — login rejected (${user.reason})`, async ({
+      page,
+      request,
+    }) => {
       await test.step("API: /auth/login must return 401 or 403", async () => {
         const token = await getApiToken(request, user);
         expect(
@@ -48,7 +51,10 @@ test.describe("CMS access — login blocked", () => {
 });
 
 test.describe("CMS access — SCEN-01 sanity (full admin)", () => {
-  test("qa_full_admin can authenticate and reach dashboard", async ({ page, request }) => {
+  test("qa_full_admin can authenticate and reach dashboard", async ({
+    page,
+    request,
+  }) => {
     const { email, password } = QA_CREDS.SCEN01;
 
     await test.step("API: /auth/login returns a token", async () => {
