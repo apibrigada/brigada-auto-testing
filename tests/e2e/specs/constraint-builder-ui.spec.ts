@@ -37,7 +37,7 @@ test.describe("SB2-09-03 — ConstraintBuilder UI builds correct JSONLogic", () 
     "Define E2E_LOGIN_EMAIL_ROLE_1/E2E_LOGIN_PASSWORD_ROLE_1 in .env.",
   );
 
-  test("Comparación preset persists `{\"==\":[{\"var\":\"answers.<key>\"}, value]}` as constraint_expression", async ({
+  test('Comparación preset persists `{"==":[{"var":"answers.<key>"}, value]}` as constraint_expression', async ({
     page,
   }) => {
     test.setTimeout(120_000);
@@ -78,9 +78,7 @@ test.describe("SB2-09-03 — ConstraintBuilder UI builds correct JSONLogic", () 
       // After addQuestion(), the new question is auto-selected, so
       // BuilderSettings now shows QuestionEditor with the "Enunciado *"
       // textarea.
-      const enunciadoTextarea = page.locator(
-        'textarea[maxlength="240"]',
-      );
+      const enunciadoTextarea = page.locator('textarea[maxlength="240"]');
       await expect(enunciadoTextarea).toBeVisible({ timeout: 10_000 });
       await enunciadoTextarea.fill(Q1_TEXT);
 
@@ -125,8 +123,10 @@ test.describe("SB2-09-03 — ConstraintBuilder UI builds correct JSONLogic", () 
 
       const url = new URL(page.url());
       const surveyIdRaw = url.searchParams.get("surveyId");
-      expect(surveyIdRaw, "surveyId must be present in URL after save")
-        .toBeTruthy();
+      expect(
+        surveyIdRaw,
+        "surveyId must be present in URL after save",
+      ).toBeTruthy();
       const surveyId = Number(surveyIdRaw);
       expect(Number.isFinite(surveyId)).toBeTruthy();
       createdSurveyId = surveyId;
@@ -150,14 +150,19 @@ test.describe("SB2-09-03 — ConstraintBuilder UI builds correct JSONLogic", () 
           constraint_expression?: unknown;
         }>;
       }> = detail.versions ?? [];
-      expect(versions.length, "survey should have at least one version")
-        .toBeGreaterThan(0);
+      expect(
+        versions.length,
+        "survey should have at least one version",
+      ).toBeGreaterThan(0);
 
       const v1 = versions[0]!;
       const q2 = v1.questions.find((q) => q.question_text === Q2_TEXT);
       expect(q2, `question with text "${Q2_TEXT}" missing in v1`).toBeTruthy();
       const ownKey = q2!.question_key;
-      expect(ownKey, "Q2 must have an auto-generated question_key").toBeTruthy();
+      expect(
+        ownKey,
+        "Q2 must have an auto-generated question_key",
+      ).toBeTruthy();
 
       // ConstraintBuilder Comparación preset always builds:
       //   { "==": [ { "var": "answers.<ownKey>" }, <rhs> ] }

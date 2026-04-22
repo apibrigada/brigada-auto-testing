@@ -188,7 +188,10 @@ test.describe("AUD-14b — label_expression backend ↔ mobile parity", () => {
       ).toBeTruthy();
       const formSchema = (mine as { form_schema?: { questions?: unknown[] } })
         .form_schema;
-      expect(formSchema, "Assigned survey must include form_schema").toBeTruthy();
+      expect(
+        formSchema,
+        "Assigned survey must include form_schema",
+      ).toBeTruthy();
       const fsQuestions = (formSchema?.questions ?? []) as Array<{
         question_key?: string;
         label_expression?: unknown;

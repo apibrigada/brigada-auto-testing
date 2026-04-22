@@ -180,7 +180,10 @@ test.describe("AUD-08 fase 2 — schema_hash 409 enforcement", () => {
         const result = (body.results ?? []).find(
           (r: { client_id: string }) => r.client_id === clientId,
         );
-        expect(result, `No result entry for client_id ${clientId}`).toBeTruthy();
+        expect(
+          result,
+          `No result entry for client_id ${clientId}`,
+        ).toBeTruthy();
         return result as {
           status: string;
           message?: string;
