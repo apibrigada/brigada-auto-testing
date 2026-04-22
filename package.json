@@ -14,7 +14,8 @@
     "test:e2e:headed": "playwright test --headed",
     "test:e2e:debug": "playwright test --debug",
     "test:e2e:report": "playwright show-report",
-    "install:browsers": "playwright install"
+    "install:browsers": "playwright install",
+    "test:contracts:jsonlogic-parity": "node tests/contracts/jsonlogic-parity.test.mjs"
   },
   "devDependencies": {
     "@types/node": "^22.13.10",
