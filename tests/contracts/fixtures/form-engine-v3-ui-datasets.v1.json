@@ -1,0 +1,170 @@
+{
+  "version": 1,
+  "description": "Form Engine v3 fixtures for UI hints, read_only, offline dataset filters, and guarded auto-advance.",
+  "schemas": [
+    {
+      "id": "ui-helper-placeholder-readonly-dataset-filter-auto-advance",
+      "schema": {
+        "version": "3.0",
+        "schema_version": 3,
+        "engine": "form-engine-v3",
+        "engine_version": 3,
+        "settings": {
+          "auto_advance": true
+        },
+        "sections": [
+          {
+            "key": "household",
+            "title": "Hogar",
+            "fields": [
+              {
+                "question_id": 101,
+                "question_key": "applicant_name",
+                "type": "text",
+                "label": "Nombre",
+                "required": true,
+                "ui": {
+                  "placeholder": "Nombre completo",
+                  "helper_text": "Usa el nombre como aparece en la identificación."
+                },
+                "options": [],
+                "validation_rules": {
+                  "min_length": 3
+                }
+              },
+              {
+                "question_id": 102,
+                "question_key": "state",
+                "type": "single_choice",
+                "label": "Estado",
+                "required": true,
+                "dataset_ref": "mx_estados",
+                "ui": {
+                  "placeholder": "Selecciona estado",
+                  "helper_text": "Catálogo disponible sin conexión."
+                },
+                "options": [],
+                "validation_rules": {}
+              },
+              {
+                "question_id": 103,
+                "question_key": "municipality",
+                "type": "single_choice",
+                "label": "Municipio",
+                "required": true,
+                "dataset_ref": "mx_municipios",
+                "dataset_filter": {
+                  "==": [
+                    {
+                      "var": "item.parent"
+                    },
+                    {
+                      "var": "answers.state"
+                    }
+                  ]
+                },
+                "ui": {
+                  "placeholder": "Selecciona municipio",
+                  "helper_text": "La lista depende del estado elegido."
+                },
+                "options": [],
+                "validation_rules": {}
+              },
+              {
+                "question_id": 104,
+                "question_key": "eligible",
+                "type": "read_only",
+                "label": "Elegibilidad",
+                "required": false,
+                "read_only": true,
+                "calculated": {
+                  "if": [
+                    {
+                      "==": [
+                        {
+                          "var": "answers.state"
+                        },
+                        "CDMX"
+                      ]
+                    },
+                    "eligible",
+                    "review"
+                  ]
+                },
+                "ui": {
+                  "helper_text": "Campo calculado por el motor."
+                },
+                "options": [],
+                "validation_rules": {}
+              },
+              {
+                "question_id": 105,
+                "question_key": "has_documents",
+                "type": "yes_no",
+                "label": "¿Tiene documentos?",
+                "required": true,
+                "constraint": {
+                  "==": [
+                    {
+                      "var": "answers.has_documents"
+                    },
+                    true
+                  ]
+                },
+                "constraint_message": "No puede avanzar sin documentos.",
+                "ui": {
+                  "helper_text": "Auto-advance debe bloquearse si la respuesta viola la restricción."
+                },
+                "options": [],
+                "validation_rules": {}
+              }
+            ]
+          }
+        ]
+      },
+      "dataset_items": {
+        "mx_estados": [
+          {
+            "value": "CDMX",
+            "label": "Ciudad de México"
+          },
+          {
+            "value": "JAL",
+            "label": "Jalisco"
+          }
+        ],
+        "mx_municipios": [
+          {
+            "value": "CUAUHTEMOC",
+            "label": "Cuauhtémoc",
+            "parent": "CDMX"
+          },
+          {
+            "value": "GUADALAJARA",
+            "label": "Guadalajara",
+            "parent": "JAL"
+          }
+        ]
+      },
+      "expected": {
+        "helper_text_fields": [
+          "applicant_name",
+          "state",
+          "municipality",
+          "eligible",
+          "has_documents"
+        ],
+        "placeholder_fields": [
+          "applicant_name",
+          "state",
+          "municipality"
+        ],
+        "read_only_fields": [
+          "eligible"
+        ],
+        "dataset_filter_field": "municipality",
+        "auto_advance_block_field": "has_documents"
+      }
+    }
+  ]
+}
