@@ -117,6 +117,111 @@
                 },
                 "options": [],
                 "validation_rules": {}
+              },
+              {
+                "question_id": 106,
+                "question_key": "contact_phone",
+                "type": "text",
+                "label": "Teléfono de contacto",
+                "required": false,
+                "ui": {
+                  "placeholder": "+52 55 1234 5678",
+                  "helper_text": "Usa un teléfono local si está disponible.",
+                  "keyboard_type": "phone-pad",
+                  "appearance": "minimal",
+                  "icon": "phone"
+                },
+                "options": [],
+                "validation_rules": {}
+              },
+              {
+                "question_id": 107,
+                "question_key": "symptoms_image_grid",
+                "type": "multiple_choice_image",
+                "label": "Síntomas visibles",
+                "required": false,
+                "ui": {
+                  "helper_text": "La cuadrícula usa columnas configuradas por schema.",
+                  "columns": 3,
+                  "appearance": "compact",
+                  "icon": "image"
+                },
+                "options": [
+                  {
+                    "value": "rash",
+                    "label": "Erupción",
+                    "image_url": "https://example.test/rash.png"
+                  },
+                  {
+                    "value": "cough",
+                    "label": "Tos",
+                    "image_url": "https://example.test/cough.png"
+                  },
+                  {
+                    "value": "fever",
+                    "label": "Fiebre",
+                    "image_url": "https://example.test/fever.png"
+                  }
+                ],
+                "validation_rules": {
+                  "min_selections": 1,
+                  "max_selections": 2
+                }
+              },
+              {
+                "question_id": 108,
+                "question_key": "route_manual",
+                "type": "gis_tracking_manual",
+                "label": "Recorrido manual",
+                "required": false,
+                "ui": {
+                  "helper_text": "Agrega puntos GPS manualmente sin conexión.",
+                  "icon": "gps"
+                },
+                "options": [],
+                "validation_rules": {
+                  "min_points": 2,
+                  "max_duration_s": 600
+                }
+              },
+              {
+                "question_id": 109,
+                "question_key": "route_auto",
+                "type": "gis_tracking_auto",
+                "label": "Recorrido automático",
+                "required": false,
+                "ui": {
+                  "helper_text": "Registra el recorrido con GPS del dispositivo.",
+                  "icon": "map"
+                },
+                "options": [],
+                "validation_rules": {
+                  "min_points": 2,
+                  "max_duration_s": 600,
+                  "interval_s": 5,
+                  "distance_interval_m": 5
+                }
+              },
+              {
+                "question_id": 110,
+                "question_key": "ine_capture",
+                "type": "ine_ocr",
+                "label": "INE",
+                "required": true,
+                "ui": {
+                  "helper_text": "Los campos marcados como requeridos bloquean el avance hasta estar completos.",
+                  "icon": "document"
+                },
+                "options": [],
+                "validation_rules": {
+                  "required_fields": [
+                    "front",
+                    "back",
+                    "nombre",
+                    "curp",
+                    "ocrNumber"
+                  ]
+                }
               }
             ]
           }
@@ -152,18 +257,41 @@
           "state",
           "municipality",
           "eligible",
-          "has_documents"
+          "has_documents",
+          "contact_phone",
+          "symptoms_image_grid",
+          "route_manual",
+          "route_auto",
+          "ine_capture"
         ],
         "placeholder_fields": [
           "applicant_name",
           "state",
-          "municipality"
+          "municipality",
+          "contact_phone"
         ],
         "read_only_fields": [
           "eligible"
         ],
         "dataset_filter_field": "municipality",
-        "auto_advance_block_field": "has_documents"
+        "auto_advance_block_field": "has_documents",
+        "advanced_ui_fields": {
+          "contact_phone": {
+            "keyboard_type": "phone-pad",
+            "appearance": "minimal",
+            "icon": "phone"
+          },
+          "symptoms_image_grid": {
+            "columns": 3,
+            "appearance": "compact",
+            "icon": "image"
+          }
+        },
+        "gis_tracking_fields": [
+          "route_manual",
+          "route_auto"
+        ],
+        "ine_required_field": "ine_capture"
       }
     }
   ]

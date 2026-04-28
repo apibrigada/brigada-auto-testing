@@ -94,6 +94,51 @@ function assertAutoAdvanceGuard(schema, expected) {
   assert.ok(field.constraint_message.trim(), `${key} message is empty`);
 }
 
+function assertAdvancedUi(schema, expected) {
+  for (const [key, uiExpectations] of Object.entries(
+    expected.advanced_ui_fields || {},
+  )) {
+    const field = fieldByKey(schema, key);
+    assert.ok(field, `missing advanced UI field ${key}`);
+    for (const [uiKey, value] of Object.entries(uiExpectations)) {
+      assert.deepEqual(field.ui?.[uiKey], value, `${key} ui.${uiKey} mismatch`);
+    }
+  }
+}
+
+function assertGisTracking(schema, expected) {
+  for (const key of expected.gis_tracking_fields || []) {
+    const field = fieldByKey(schema, key);
+    assert.ok(field, `missing GIS tracking field ${key}`);
+    assert.ok(
+      ["gis_tracking_manual", "gis_tracking_auto"].includes(field.type),
+      `${key} must use a gis_tracking_* type`,
+    );
+    assert.equal(
+      typeof field.validation_rules?.min_points,
+      "number",
+      `${key} must define min_points`,
+    );
+    assert.equal(
+      typeof field.validation_rules?.max_duration_s,
+      "number",
+      `${key} must define max_duration_s`,
+    );
+  }
+}
+
+function assertIneRequiredFields(schema, expected) {
+  const key = expected.ine_required_field;
+  const field = fieldByKey(schema, key);
+  assert.ok(field, `missing INE field ${key}`);
+  assert.equal(field.type, "ine_ocr", `${key} must be ine_ocr`);
+  assert.deepEqual(
+    field.validation_rules?.required_fields,
+    ["front", "back", "nombre", "curp", "ocrNumber"],
+    `${key} required_fields mismatch`,
+  );
+}
+
 const fixture = readFixture();
 assert.equal(fixture.version, 1, "fixture version must be 1");
 assert.ok(Array.isArray(fixture.schemas), "schemas must be an array");
@@ -106,6 +151,9 @@ for (const item of fixture.schemas) {
   assertReadOnly(schema, item.expected);
   assertDatasetFilter(schema, item.expected, item.dataset_items || {});
   assertAutoAdvanceGuard(schema, item.expected);
+  assertAdvancedUi(schema, item.expected);
+  assertGisTracking(schema, item.expected);
+  assertIneRequiredFields(schema, item.expected);
 }
 
 console.log("form-engine-v3 UI/dataset fixtures contract passed");
