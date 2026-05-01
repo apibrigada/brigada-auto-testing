@@ -88,9 +88,10 @@ test.describe("impact preflight contract", () => {
     });
 
     await page.goto("/dashboard/surveys");
-    await expect(page.getByText(survey.title)).toBeVisible({ timeout: 15000 });
+    const surveyRow = page.getByRole("row").filter({ hasText: survey.title });
+    await expect(surveyRow).toBeVisible({ timeout: 15000 });
 
-    await page.getByRole("button").filter({ hasText: /^$/ }).first().click();
+    await surveyRow.getByRole("button").first().click();
     await page.getByRole("menuitem", { name: /Desactivar/i }).click();
     await expect(page.getByText(/Asignaciones activas/i)).toBeVisible();
     await page.getByRole("button", { name: /^Desactivar$/i }).click();
