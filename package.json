@@ -18,6 +18,8 @@
     "test:contracts:jsonlogic-parity": "node tests/contracts/jsonlogic-parity.test.mjs",
     "test:contracts:form-engine-v3": "node tests/contracts/form-engine-v3-ui-datasets.test.mjs",
     "docs:screenshots": "npx tsx scripts/capture-docs-screenshots.ts",
+    "docs:tours": "npx tsx scripts/capture-tour-videos.ts",
+    "docs:tours:headed": "npx tsx scripts/capture-tour-videos.ts --headed",
     "docs:screenshots:article": "npx tsx scripts/capture-docs-screenshots.ts"
   },
   "devDependencies": {
