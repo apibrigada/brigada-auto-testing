@@ -6,7 +6,7 @@ import fs from "fs";
 
 dotenv.config();
 
-const BASE_URL = process.env.E2E_CMS_BASE_URL ?? "http://127.0.0.1:3100";
+const BASE_URL = process.env.E2E_CMS_BASE_URL ?? "http://127.0.0.1:3000";
 const EMAIL = process.env.E2E_LOGIN_EMAIL_ROLE_1 ?? process.env.E2E_LOGIN_EMAIL;
 const PASSWORD = process.env.E2E_LOGIN_PASSWORD_ROLE_1 ?? process.env.E2E_LOGIN_PASSWORD;
 const SCREENSHOT_DIR = path.resolve(__dirname, "../../webCMS/public/docs/screenshots");
