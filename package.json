@@ -18,9 +18,13 @@
     "test:contracts:jsonlogic-parity": "node tests/contracts/jsonlogic-parity.test.mjs",
     "test:contracts:form-engine-v3": "node tests/contracts/form-engine-v3-ui-datasets.test.mjs",
     "docs:screenshots": "npx tsx scripts/capture-docs-screenshots.ts",
+    "docs:screenshots:article": "npx tsx scripts/capture-docs-screenshots.ts",
+    "docs:gifs": "npx tsx scripts/capture-doc-gifs.ts",
+    "docs:gifs:headed": "npx tsx scripts/capture-doc-gifs.ts --headed",
+    "docs:gifs:convert": "npx tsx scripts/webm-to-gif.ts",
+    "docs:gifs:convert:dry": "npx tsx scripts/webm-to-gif.ts --dry-run",
     "docs:tours": "npx tsx scripts/capture-tour-videos.ts",
-    "docs:tours:headed": "npx tsx scripts/capture-tour-videos.ts --headed",
-    "docs:screenshots:article": "npx tsx scripts/capture-docs-screenshots.ts"
+    "docs:tours:headed": "npx tsx scripts/capture-tour-videos.ts --headed"
   },
   "devDependencies": {
     "@types/node": "^22.13.10",

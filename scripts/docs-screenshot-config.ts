@@ -1,7 +1,8 @@
 export interface ScreenshotAction {
-  type: "click" | "fill" | "select" | "wait" | "hover";
+  type: "click" | "fill" | "select" | "wait" | "hover" | "press" | "drag";
   selector: string;
   value?: string;
+  targetSelector?: string;
 }
 
 export interface ScreenshotSpec {
@@ -14,6 +15,16 @@ export interface ScreenshotSpec {
   actions?: ScreenshotAction[];
   selector?: string;
   fullPage?: boolean;
+  caption?: string;
+}
+
+export interface GifSpec {
+  id: string;
+  articleId: string;
+  url: string;
+  viewport: "desktop";
+  durationMs: number;
+  actions: ScreenshotAction[];
   caption?: string;
 }
 
@@ -335,3 +346,195 @@ export const SCREENSHOTS: ScreenshotSpec[] = [
 export function getScreenshotsByArticle(articleId: string): ScreenshotSpec[] {
   return SCREENSHOTS.filter((s) => s.articleId === articleId);
 }
+
+export const GIFS: GifSpec[] = [
+  // ═══════════════════════════════════════
+  // KEYBOARD SHORTCUTS DEMO
+  // ═══════════════════════════════════════
+  {
+    id: "atajos-kbd-demo",
+    articleId: "atajos-teclado",
+    url: "/dashboard/campaigns",
+    viewport: "desktop",
+    durationMs: 6000,
+    actions: [
+      { type: "wait", selector: "table" },
+      { type: "press", selector: "body", value: "n" },
+      { type: "wait", selector: "input, [role='dialog']" },
+      { type: "press", selector: "body", value: "Escape" },
+      { type: "wait", selector: "table" },
+      { type: "press", selector: "body", value: "/" },
+      { type: "fill", selector: "input[placeholder*='buscar'], input[type='search'], input[placeholder*='Buscar']", value: "test" },
+      { type: "press", selector: "body", value: "Escape" },
+    ],
+    caption: "Uso de atajos de teclado: N (nuevo), / (buscar), Esc (limpiar)",
+  },
+
+  // ═══════════════════════════════════════
+  // SURVEY BUILDER DRAG AND DROP
+  // ═══════════════════════════════════════
+  {
+    id: "survey-builder-dnd",
+    articleId: "survey-builder-basico",
+    url: "/dashboard/surveys/builder",
+    viewport: "desktop",
+    durationMs: 8000,
+    actions: [
+      { type: "wait", selector: "[data-tour='builder-canvas']" },
+      { type: "wait", selector: "[data-tour='builder-toolbox']" },
+      { type: "drag", selector: "[data-tour='builder-toolbox'] [draggable]:first-child", targetSelector: "[data-tour='builder-canvas']" },
+      { type: "wait", selector: "[data-tour='builder-canvas'] [draggable], [data-tour='builder-canvas'] > *:first-child" },
+      { type: "click", selector: "[data-tour='builder-save']" },
+    ],
+    caption: "Arrastrar un tipo de pregunta del toolbox al lienzo y guardar",
+  },
+
+  // ═══════════════════════════════════════
+  // CAMPAIGN WIZARD STEPS
+  // ═══════════════════════════════════════
+  {
+    id: "campaign-wizard-flow",
+    articleId: "campana-sidebar-peek",
+    url: "/dashboard/campaigns",
+    viewport: "desktop",
+    durationMs: 7000,
+    actions: [
+      { type: "wait", selector: "[data-tour='campaigns-list'], table" },
+      { type: "hover", selector: "table tbody tr:first-child, [data-tour='campaigns-list'] a:first-child, table a:first-child" },
+      { type: "wait", selector: "500" },
+    ],
+    caption: "Navegación por el sidebar de campañas con hover para peek",
+  },
+
+  // ═══════════════════════════════════════
+  // COMMAND PALETTE
+  // ═══════════════════════════════════════
+  {
+    id: "command-palette-demo",
+    articleId: "command-palette",
+    url: "/dashboard",
+    viewport: "desktop",
+    durationMs: 5000,
+    actions: [
+      { type: "wait", selector: "main" },
+      { type: "press", selector: "body", value: "Control+k" },
+      { type: "wait", selector: "[role='dialog']" },
+      { type: "fill", selector: "[role='dialog'] input", value: "encuesta" },
+      { type: "wait", selector: "500" },
+      { type: "press", selector: "body", value: "Escape" },
+    ],
+    caption: "Abrir paleta de comandos con Ctrl+K, buscar y cerrar",
+  },
+
+  // ═══════════════════════════════════════
+  // MAP DRAWING
+  // ═══════════════════════════════════════
+  {
+    id: "areas-map-draw",
+    articleId: "dibujo-edicion",
+    url: "/dashboard/areas-v2",
+    viewport: "desktop",
+    durationMs: 8000,
+    actions: [
+      { type: "wait", selector: "[data-tour='areas-map']" },
+      { type: "click", selector: "[data-tour='areas-map'] button[title*='dibujo'], [data-tour='areas-map'] button[aria-label*='draw'], .mapboxgl-ctrl button" },
+      { type: "wait", selector: "1000" },
+    ],
+    caption: "Activar herramienta de dibujo en el mapa de áreas",
+  },
+
+  // ═══════════════════════════════════════
+  // WHAT'S NEW DROPDOWN
+  // ═══════════════════════════════════════
+  {
+    id: "whats-new-demo",
+    articleId: "help-tours",
+    url: "/dashboard",
+    viewport: "desktop",
+    durationMs: 5000,
+    actions: [
+      { type: "wait", selector: "main" },
+      { type: "click", selector: "[title='Novedades']" },
+      { type: "wait", selector: "[role='menu']" },
+      { type: "wait", selector: "1500" },
+      { type: "press", selector: "body", value: "Escape" },
+    ],
+    caption: "Abrir dropdown de Novedades y explorar elementos",
+  },
+
+  // ═══════════════════════════════════════
+  // TOUR LAUNCHER
+  // ═══════════════════════════════════════
+  {
+    id: "tour-start-demo",
+    articleId: "help-tours",
+    url: "/dashboard/help?tab=tours",
+    viewport: "desktop",
+    durationMs: 6000,
+    actions: [
+      { type: "wait", selector: "main" },
+      { type: "click", selector: "button:has-text('Iniciar'), button:has-text('Reiniciar'), button:has-text('tour')" },
+      { type: "wait", selector: ".joyride-tooltip, [role='dialog'], [data-tour-overlay]" },
+      { type: "wait", selector: "2000" },
+    ],
+    caption: "Iniciar un tour guiado y ver el tooltip de bienvenida",
+  },
+
+  // ═══════════════════════════════════════
+  // SIDEBAR SEARCH
+  // ═══════════════════════════════════════
+  {
+    id: "sidebar-search-demo",
+    articleId: "sidebar-nav",
+    url: "/dashboard",
+    viewport: "desktop",
+    durationMs: 5000,
+    actions: [
+      { type: "wait", selector: "[data-tour='sidebar']" },
+      { type: "click", selector: "[data-tour='sidebar'] input, aside input" },
+      { type: "fill", selector: "[data-tour='sidebar'] input, aside input", value: "cam" },
+      { type: "wait", selector: "800" },
+      { type: "fill", selector: "[data-tour='sidebar'] input, aside input", value: "" },
+      { type: "wait", selector: "500" },
+    ],
+    caption: "Buscar secciones del panel desde el sidebar",
+  },
+
+  // ═══════════════════════════════════════
+  // LEADER REASSIGNMENT
+  // ═══════════════════════════════════════
+  {
+    id: "reasignacion-flow",
+    articleId: "reasignacion-lider",
+    url: "/dashboard/teams/1",
+    viewport: "desktop",
+    durationMs: 7000,
+    actions: [
+      { type: "wait", selector: "main" },
+      { type: "click", selector: "[data-tour='team-reassign'], button:has-text('Reasignar')" },
+      { type: "wait", selector: "[role='dialog'], .modal, [role='listbox']" },
+      { type: "wait", selector: "2000" },
+    ],
+    caption: "Abrir wizard de reasignación de líder desde el detalle del equipo",
+  },
+
+  // ═══════════════════════════════════════
+  // READING PROGRESS
+  // ═══════════════════════════════════════
+  {
+    id: "docs-reading-progress",
+    articleId: "help-docs",
+    url: "/dashboard/help?tab=docs",
+    viewport: "desktop",
+    durationMs: 6000,
+    actions: [
+      { type: "wait", selector: "main" },
+      { type: "click", selector: "a:has-text('Primeros pasos'), [data-sidebar]:first-child a" },
+      { type: "wait", selector: "1000" },
+      { type: "click", selector: "a:has-text('Bienvenido'), article a:first-child" },
+      { type: "wait", selector: "article" },
+      { type: "wait", selector: "2000" },
+    ],
+    caption: "Navegar por la documentación y ver el progreso de lectura en el sidebar",
+  },
+];
