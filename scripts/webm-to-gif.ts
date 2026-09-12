@@ -84,7 +84,7 @@ function convertToGif(webmPath: string): string {
   // Step 1: Generate palette for better colors
   try {
     execSync(
-      `ffmpeg -y -i "${webmPath}" -vf "fps=10,scale=640:-1:flags=lanczos,palettegen=stats_mode=diff" "${palettePath}"`,
+      `ffmpeg -y -i "${webmPath}" -vf "fps=8,scale=480:-1:flags=lanczos,palettegen=stats_mode=diff" "${palettePath}"`,
       { stdio: "ignore" }
     );
   } catch {
@@ -94,17 +94,16 @@ function convertToGif(webmPath: string): string {
 
   // Step 2: Convert to GIF with palette
   const hasPalette = fs.existsSync(palettePath);
-  const filterStr = `fps=10,scale=640:-1:flags=lanczos${hasPalette ? "" : ""}`;
 
   try {
     if (hasPalette) {
       execSync(
-        `ffmpeg -y -i "${webmPath}" -i "${palettePath}" -lavfi "fps=10,scale=640:-1:flags=lanczos [x]; [x][1:v] paletteuse=dither=bayer:bayer_scale=3" "${gifPath}"`,
+        `ffmpeg -y -i "${webmPath}" -i "${palettePath}" -lavfi "fps=8,scale=480:-1:flags=lanczos [x]; [x][1:v] paletteuse=dither=bayer:bayer_scale=5" "${gifPath}"`,
         { stdio: "ignore" }
       );
     } else {
       execSync(
-        `ffmpeg -y -i "${webmPath}" -vf "fps=10,scale=640:-1:flags=lanczos" "${gifPath}"`,
+        `ffmpeg -y -i "${webmPath}" -vf "fps=8,scale=480:-1:flags=lanczos" "${gifPath}"`,
         { stdio: "ignore" }
       );
     }

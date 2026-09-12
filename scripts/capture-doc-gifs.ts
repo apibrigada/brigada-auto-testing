@@ -119,9 +119,6 @@ async function captureGif(context: BrowserContext, spec: GifSpec) {
 
   const webmPath = path.join(dir, `${spec.id}.webm`);
 
-  // Start video recording
-  const video = page.video();
-
   await page.goto(`${BASE_URL}${spec.url}`, { waitUntil: "domcontentloaded", timeout: 15000 });
   await page.waitForTimeout(2000); // Let page settle
 
@@ -132,24 +129,19 @@ async function captureGif(context: BrowserContext, spec: GifSpec) {
   const remainingMs = Math.max(0, spec.durationMs - 3000);
   await page.waitForTimeout(Math.min(remainingMs, spec.durationMs));
 
-  // Stop recording
+  // Get video path before closing
+  const videoPath = await page.video()?.path();
+
+  // Stop recording by closing page
   await page.close();
 
   // Save the video
-  if (video) {
-    const buffer = await video.path().then(async (videoPath) => {
-      if (videoPath && fs.existsSync(videoPath)) {
-        return fs.readFileSync(videoPath);
-      }
-      return null;
-    });
-
-    if (buffer) {
-      fs.writeFileSync(webmPath, buffer);
-      console.log(`  ✓ ${spec.id} → ${path.relative(process.cwd(), webmPath)}`);
-    } else {
-      console.warn(`  ⚠ ${spec.id}: no video data`);
-    }
+  if (videoPath && fs.existsSync(videoPath)) {
+    fs.copyFileSync(videoPath, webmPath);
+    const sizeKB = Math.round(fs.statSync(webmPath).size / 1024);
+    console.log(`  ✓ ${spec.id} → ${path.relative(process.cwd(), webmPath)} (${sizeKB}KB)`);
+  } else {
+    console.warn(`  ⚠ ${spec.id}: no video data at ${videoPath}`);
   }
 }
 
@@ -172,6 +164,10 @@ async function main() {
   const context = await browser.newContext({
     viewport: VIEWPORTS.desktop,
     locale: "es-MX",
+    recordVideo: {
+      dir: GIF_DIR,
+      size: VIEWPORTS.desktop,
+    },
   });
 
   console.log("🔐 Logging in...");
