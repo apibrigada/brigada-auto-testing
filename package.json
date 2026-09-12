@@ -16,11 +16,14 @@
     "test:e2e:report": "playwright show-report",
     "install:browsers": "playwright install",
     "test:contracts:jsonlogic-parity": "node tests/contracts/jsonlogic-parity.test.mjs",
-    "test:contracts:form-engine-v3": "node tests/contracts/form-engine-v3-ui-datasets.test.mjs"
+    "test:contracts:form-engine-v3": "node tests/contracts/form-engine-v3-ui-datasets.test.mjs",
+    "docs:screenshots": "npx tsx scripts/capture-docs-screenshots.ts",
+    "docs:screenshots:article": "npx tsx scripts/capture-docs-screenshots.ts"
   },
   "devDependencies": {
     "@types/node": "^22.13.10",
     "@playwright/test": "^1.53.2",
-    "dotenv": "^16.4.5"
+    "dotenv": "^16.4.5",
+    "tsx": "^4.19.0"
   }
 }
