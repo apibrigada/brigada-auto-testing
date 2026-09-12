@@ -50,10 +50,11 @@ async function captureScreenshot(page: Page, spec: ScreenshotSpec) {
   const viewport = VIEWPORTS[spec.viewport];
   await page.setViewportSize(viewport);
 
-  await page.goto(`${BASE_URL}${spec.url}`, { waitUntil: "networkidle" });
+  await page.goto(`${BASE_URL}${spec.url}`, { waitUntil: "domcontentloaded", timeout: 15000 });
+  await page.waitForTimeout(2000);
 
   if (spec.waitFor) {
-    await page.waitForSelector(spec.waitFor, { timeout: 10000 }).catch(() => {
+    await page.waitForSelector(spec.waitFor, { timeout: 8000 }).catch(() => {
       console.warn(`  ⚠ Selector not found: ${spec.waitFor}`);
     });
   }
@@ -110,11 +111,29 @@ async function main() {
 
   for (const spec of specs) {
     try {
+      const alive = page.url() !== "about:blank";
+      if (!alive) {
+        console.error(`  ✗ ${spec.id}: page closed, recovering...`);
+        const newPage = await context.newPage();
+        await login(newPage);
+        Object.assign(page, newPage);
+      }
       await captureScreenshot(page, spec);
       success++;
     } catch (err) {
       console.error(`  ✗ ${spec.id}: ${err}`);
       failed++;
+      try {
+        await page.goto(`${BASE_URL}/dashboard`, { waitUntil: "domcontentloaded", timeout: 10000 });
+        await page.waitForTimeout(1000);
+      } catch {
+        try {
+          const recovered = await context.newPage();
+          await login(recovered);
+          (page as unknown as Page).close;
+          Object.assign(page, recovered);
+        } catch { /* best effort */ }
+      }
     }
   }
 
@@ -124,6 +143,7 @@ async function main() {
   console.log(`📁 Output: ${SCREENSHOT_DIR}\n`);
 
   // Generate index.json for reference
+  fs.mkdirSync(SCREENSHOT_DIR, { recursive: true });
   const index = specs.map((s) => ({
     id: s.id,
     articleId: s.articleId,

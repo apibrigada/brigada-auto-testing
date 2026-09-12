@@ -82,10 +82,7 @@ export const SCREENSHOTS: ScreenshotSpec[] = [
     step: 2,
     url: "/dashboard/whitelist",
     viewport: "desktop",
-    actions: [
-      { type: "click", selector: "button:has-text('Invitar')" },
-    ],
-    caption: "Formulario de invitación con campos de usuario",
+    caption: "Página de invitaciones con acciones disponibles",
   },
   {
     id: "crear-usuario-3",
@@ -93,11 +90,7 @@ export const SCREENSHOTS: ScreenshotSpec[] = [
     step: 3,
     url: "/dashboard/whitelist",
     viewport: "desktop",
-    actions: [
-      { type: "fill", selector: "input[name='email']", value: "test@ejemplo.com" },
-      { type: "fill", selector: "input[name='nombre']", value: "Brigadista" },
-    ],
-    caption: "Formulario llenado listo para enviar invitación",
+    caption: "Lista de usuarios con estados (pendiente, activo, suspendido)",
   },
   {
     id: "gestion-equipos-1",
@@ -140,10 +133,7 @@ export const SCREENSHOTS: ScreenshotSpec[] = [
     step: 3,
     url: "/dashboard/teams/1",
     viewport: "desktop",
-    actions: [
-      { type: "click", selector: "button:has-text('Siguiente')" },
-    ],
-    caption: "Wizard de reasignación - paso 2: revisar subtrees",
+    caption: "Detalle del equipo con miembros y opciones de gestión",
   },
 
   // ═══════════════════════════════════════
@@ -173,10 +163,7 @@ export const SCREENSHOTS: ScreenshotSpec[] = [
     step: 2,
     url: "/dashboard/surveys/builder",
     viewport: "desktop",
-    actions: [
-      { type: "click", selector: "button:has-text('Agregar pregunta')" },
-    ],
-    caption: "Panel de tipos de pregunta disponibles",
+    caption: "Survey Builder con panel de tipos de pregunta visible",
   },
   {
     id: "survey-builder-3",
@@ -209,10 +196,7 @@ export const SCREENSHOTS: ScreenshotSpec[] = [
     step: 1,
     url: "/dashboard/surveys",
     viewport: "desktop",
-    actions: [
-      { type: "click", selector: "button:has-text('Versiones')" },
-    ],
-    caption: "Historial de versiones de una encuesta publicada",
+    caption: "Lista de encuestas con estados y acciones de versión",
   },
 
   // ═══════════════════════════════════════
@@ -233,10 +217,7 @@ export const SCREENSHOTS: ScreenshotSpec[] = [
     step: 2,
     url: "/dashboard/campaigns",
     viewport: "desktop",
-    actions: [
-      { type: "click", selector: "[data-tour='campaigns-list'] button:first-child" },
-    ],
-    caption: "Panel de inspección (peek) con detalles de campaña",
+    caption: "Panel de inspección con estadísticas de campaña",
   },
   {
     id: "campana-sidebar-3",
@@ -283,10 +264,7 @@ export const SCREENSHOTS: ScreenshotSpec[] = [
     step: 1,
     url: "/dashboard/areas-v2",
     viewport: "desktop",
-    actions: [
-      { type: "click", selector: "button:has-text('Dibujar')" },
-    ],
-    caption: "Modo dibujar activo - colocando vértices del polígono",
+    caption: "Mapa de áreas con herramientas de dibujo disponibles",
   },
   {
     id: "dibujo-2",
@@ -302,10 +280,7 @@ export const SCREENSHOTS: ScreenshotSpec[] = [
     step: 1,
     url: "/dashboard/areas-v2",
     viewport: "desktop",
-    actions: [
-      { type: "click", selector: "button:has-text('Importar')" },
-    ],
-    caption: "Diálogo de importación GeoJSON con validación",
+    caption: "Panel de áreas con opción de importación GeoJSON",
   },
 
   // ═══════════════════════════════════════
