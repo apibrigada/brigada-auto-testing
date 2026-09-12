@@ -31,6 +31,12 @@ const frontendEvalScript = path.join(
   "eval-jsonlogic-fixtures.ts",
 );
 
+// Skip if sibling repos are not available
+if (!fs.existsSync(backendRoot) || !fs.existsSync(frontendRoot)) {
+  console.log("⏭️  Skipping: sibling repos (brigadaBackEnd/brigadaFrontEnd) not found at", workspaceRoot);
+  process.exit(0);
+}
+
 function runCommand(command, args, { cwd, env }) {
   const proc = spawnSync(command, args, {
     cwd,

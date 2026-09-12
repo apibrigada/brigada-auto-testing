@@ -15,6 +15,7 @@
  */
 
 import assert from "node:assert/strict";
+import fs from "node:fs";
 import path from "node:path";
 import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
@@ -28,6 +29,12 @@ const scriptPath = path.join(
   "scripts",
   "eval-label-expression.ts",
 );
+
+// Skip if frontend repo is not available
+if (!fs.existsSync(frontendRoot) || !fs.existsSync(scriptPath)) {
+  console.log("⏭️  Skipping: brigadaFrontEnd repo not found at", frontendRoot);
+  process.exit(0);
+}
 
 function runScript() {
   const proc = spawnSync(

@@ -8,6 +8,16 @@ const __dirname = path.dirname(__filename);
 
 const workspaceRoot = path.resolve(__dirname, "..", "..", "..");
 
+// Check if sibling repos exist
+const backendRoot = path.join(workspaceRoot, "brigadaBackEnd");
+const cmsRoot = path.join(workspaceRoot, "brigadaWebCMS");
+const frontendRoot = path.join(workspaceRoot, "brigadaFrontEnd");
+
+if (!fs.existsSync(backendRoot) || !fs.existsSync(cmsRoot) || !fs.existsSync(frontendRoot)) {
+  console.log("⏭️  Skipping: sibling repos not found at", workspaceRoot);
+  process.exit(0);
+}
+
 const contractFiles = {
   backend: {
     operatorMatrix: path.join(
