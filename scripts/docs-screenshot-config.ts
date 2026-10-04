@@ -341,6 +341,102 @@ export const SCREENSHOTS: ScreenshotSpec[] = [
     ],
     caption: "Paleta de comandos (Ctrl+K) con búsqueda de docs y tours",
   },
+
+  // ═══════════════════════════════════════
+  // APP MÓVIL (brigadaApp)
+  // ═══════════════════════════════════════
+  {
+    id: "app-login-1",
+    articleId: "app-login",
+    step: 1,
+    url: "/login",
+    viewport: "mobile",
+    caption: "Pantalla de login de la app móvil",
+  },
+  {
+    id: "app-home-1",
+    articleId: "app-home",
+    step: 1,
+    url: "/",
+    viewport: "mobile",
+    waitFor: "[data-testid='home-screen'], main",
+    caption: "Home de la app con métricas y acciones",
+  },
+  {
+    id: "app-questionnaires-1",
+    articleId: "app-questionnaires",
+    step: 1,
+    url: "/questionnaires",
+    viewport: "mobile",
+    waitFor: "[data-testid='questionnaire-list'], main",
+    caption: "Lista de encuestas asignadas",
+  },
+  {
+    id: "app-survey-fill-1",
+    articleId: "app-survey-fill",
+    step: 1,
+    url: "/surveys/fill",
+    viewport: "mobile",
+    waitFor: "[data-testid='survey-fill'], main",
+    caption: "Llenado de encunta pregunta por pregunta",
+  },
+  {
+    id: "app-ine-ocr-1",
+    articleId: "app-ine-ocr",
+    step: 1,
+    url: "/surveys/fill",
+    viewport: "mobile",
+    waitFor: "[data-testid='ine-question'], [data-testid='ine-camera']",
+    caption: "Captura de INE con cámara y OCR",
+  },
+  {
+    id: "app-sync-1",
+    articleId: "app-sync",
+    step: 1,
+    url: "/mis-envios",
+    viewport: "mobile",
+    waitFor: "[data-testid='sync-list'], main",
+    caption: "Historial de respuestas enviadas",
+  },
+
+  // ═══════════════════════════════════════
+  // PWA (brigadaPWA)
+  // ═══════════════════════════════════════
+  {
+    id: "pwa-login-1",
+    articleId: "pwa-login",
+    step: 1,
+    url: "/login",
+    viewport: "mobile",
+    caption: "Pantalla de login de la PWA",
+  },
+  {
+    id: "pwa-questionnaires-1",
+    articleId: "pwa-questionnaires",
+    step: 1,
+    url: "/questionnaires",
+    viewport: "mobile",
+    waitFor: "[data-testid='questionnaire-list'], main",
+    caption: "Lista de encuestas en la PWA",
+  },
+  {
+    id: "pwa-survey-fill-1",
+    articleId: "pwa-survey-fill",
+    step: 1,
+    url: "/surveys/fill",
+    viewport: "mobile",
+    waitFor: "[data-testid='survey-fill'], main",
+    caption: "Llenado de encuesta en la PWA",
+  },
+  {
+    id: "pwa-offline-1",
+    articleId: "pwa-offline",
+    step: 1,
+    url: "/",
+    viewport: "mobile",
+    waitFor: "[data-testid='offline-indicator'], main",
+    caption: "Indicador de modo offline",
+  },
 ];
 
 export function getScreenshotsByArticle(articleId: string): ScreenshotSpec[] {
