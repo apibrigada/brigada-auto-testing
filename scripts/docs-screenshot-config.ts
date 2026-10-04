@@ -343,6 +343,281 @@ export const SCREENSHOTS: ScreenshotSpec[] = [
   },
 
   // ═══════════════════════════════════════
+  // INVENTARIO DE CONSUMIBLES
+  // ═══════════════════════════════════════
+  {
+    id: "inventario-lista-1",
+    articleId: "inventario-consumibles",
+    step: 1,
+    url: "/dashboard/consumables",
+    viewport: "desktop",
+    waitFor: "table",
+    caption: "Lista de consumibles con estados de escasez",
+  },
+  {
+    id: "inventario-analytics-1",
+    articleId: "inventario-consumibles",
+    step: 2,
+    url: "/dashboard/consumables/analytics",
+    viewport: "desktop",
+    waitFor: "main",
+    caption: "Analytics de consumo y escasez",
+  },
+
+  // ═══════════════════════════════════════
+  // DIFUSIÓN Y PROMOCIONES
+  // ═══════════════════════════════════════
+  {
+    id: "difusion-lista-1",
+    articleId: "difusion-promociones",
+    step: 1,
+    url: "/dashboard/promotions",
+    viewport: "desktop",
+    waitFor: "main",
+    caption: "Lista de ítems de promoción con QR codes",
+  },
+  {
+    id: "difusion-qr-1",
+    articleId: "difusion-promociones",
+    step: 2,
+    url: "/dashboard/promotions",
+    viewport: "desktop",
+    actions: [
+      { type: "click", selector: "button[title*='QR'], button[aria-label*='QR']" },
+      { type: "wait", selector: "[role='dialog'], .modal" },
+    ],
+    caption: "Código QR de una promoción",
+  },
+
+  // ═══════════════════════════════════════
+  // VISTA DE GRAFO DE EQUIPOS
+  // ═══════════════════════════════════════
+  {
+    id: "grafo-arbol-1",
+    articleId: "vista-grafo-equipos",
+    step: 1,
+    url: "/dashboard/teams",
+    viewport: "desktop",
+    waitFor: "[data-tour='teams-tree']",
+    caption: "Vista de árbol de equipos",
+  },
+  {
+    id: "grafo-grafo-1",
+    articleId: "vista-grafo-equipos",
+    step: 2,
+    url: "/dashboard/teams",
+    viewport: "desktop",
+    actions: [
+      { type: "click", selector: "button:has-text('Grafo')" },
+      { type: "wait", selector: ".react-flow" },
+    ],
+    caption: "Vista de grafo con layout top-down",
+  },
+  {
+    id: "grafo-cross-edges-1",
+    articleId: "vista-grafo-equipos",
+    step: 3,
+    url: "/dashboard/teams",
+    viewport: "desktop",
+    actions: [
+      { type: "click", selector: "button:has-text('Grafo')" },
+      { type: "wait", selector: ".react-flow" },
+    ],
+    caption: "Grafo con cross-edges exposables (ámbar punteado)",
+  },
+
+  // ═══════════════════════════════════════
+  // IMPORTACIÓN MASIVA DE USUARIOS
+  // ═══════════════════════════════════════
+  {
+    id: "importacion-upload-1",
+    articleId: "importacion-masiva-usuarios",
+    step: 1,
+    url: "/dashboard/users/bulk",
+    viewport: "desktop",
+    waitFor: "main",
+    caption: "Zona de upload para importación masiva",
+  },
+  {
+    id: "importacion-preview-1",
+    articleId: "importacion-masiva-usuarios",
+    step: 2,
+    url: "/dashboard/users/bulk",
+    viewport: "desktop",
+    waitFor: "table",
+    caption: "Preview de datos importados con validación",
+  },
+
+  // ═══════════════════════════════════════
+  // BLOQUEO DE USUARIOS
+  // ═══════════════════════════════════════
+  {
+    id: "bloqueo-dialog-1",
+    articleId: "bloqueo-usuarios",
+    step: 1,
+    url: "/dashboard/users",
+    viewport: "desktop",
+    actions: [
+      { type: "click", selector: "button[title*='Bloquear'], button[aria-label*='block']" },
+      { type: "wait", selector: "[role='dialog'], .modal" },
+    ],
+    caption: "Diálogo de bloqueo con razón obligatoria",
+  },
+
+  // ═══════════════════════════════════════
+  // NOTIFICACIONES PUSH
+  // ═══════════════════════════════════════
+  {
+    id: "push-crear-1",
+    articleId: "notificaciones-push",
+    step: 1,
+    url: "/dashboard/campaigns",
+    viewport: "desktop",
+    waitFor: "main",
+    caption: "Crear notificación push con audiencia",
+  },
+  {
+    id: "push-audiencia-1",
+    articleId: "notificaciones-push",
+    step: 2,
+    url: "/dashboard/campaigns",
+    viewport: "desktop",
+    waitFor: "main",
+    caption: "Configuración de audiencia y deep linking",
+  },
+
+  // ═══════════════════════════════════════
+  // WORKBENCH DE PERMISOS
+  // ═══════════════════════════════════════
+  {
+    id: "workbench-matriz-1",
+    articleId: "workbench-permisos",
+    step: 1,
+    url: "/dashboard/settings?tab=roles",
+    viewport: "desktop",
+    waitFor: "main",
+    caption: "Matriz de permisos con KPI cards y dependencias",
+  },
+
+  // ═══════════════════════════════════════
+  // LISTAS DE DATOS
+  // ═══════════════════════════════════════
+  {
+    id: "listas-editor-1",
+    articleId: "listas-datos",
+    step: 1,
+    url: "/dashboard/surveys/builder",
+    viewport: "desktop",
+    waitFor: "[data-tour='builder-canvas']",
+    caption: "Editor de hoja de cálculo para listas de datos",
+  },
+  {
+    id: "listas-variables-1",
+    articleId: "listas-datos",
+    step: 2,
+    url: "/dashboard/surveys/builder",
+    viewport: "desktop",
+    waitFor: "[data-tour='builder-canvas']",
+    caption: "Variables de lista en lógica avanzada",
+  },
+
+  // ═══════════════════════════════════════
+  // SUB-CAMPOS COMPUESTOS
+  // ═══════════════════════════════════════
+  {
+    id: "sub-compuestos-config-1",
+    articleId: "sub-compuestos",
+    step: 1,
+    url: "/dashboard/surveys/builder",
+    viewport: "desktop",
+    waitFor: "[data-tour='builder-canvas']",
+    caption: "Configuración de sub-campos compuestos (autofill)",
+  },
+
+  // ═══════════════════════════════════════
+  // VISTAS GUARDADAS
+  // ═══════════════════════════════════════
+  {
+    id: "vistas-guardar-1",
+    articleId: "vistas-guardadas",
+    step: 1,
+    url: "/dashboard/analytics",
+    viewport: "desktop",
+    waitFor: "main",
+    caption: "Guardar vista con filtros en analytics",
+  },
+
+  // ═══════════════════════════════════════
+  // UMBRALES DE OPERACIONES
+  // ═══════════════════════════════════════
+  {
+    id: "umbrales-config-1",
+    articleId: "umbrales-operaciones",
+    step: 1,
+    url: "/dashboard/settings",
+    viewport: "desktop",
+    waitFor: "main",
+    caption: "Configuración de umbrales de operaciones",
+  },
+
+  // ═══════════════════════════════════════
+  // EXPORTAR PDF
+  // ═══════════════════════════════════════
+  {
+    id: "exportar-pdf-1",
+    articleId: "exportar-pdf",
+    step: 1,
+    url: "/dashboard/reports",
+    viewport: "desktop",
+    waitFor: "main",
+    caption: "Diálogo de exportación a PDF",
+  },
+
+  // ═══════════════════════════════════════
+  // MAPAS ESTÁTICOS
+  // ═══════════════════════════════════════
+  {
+    id: "mapas-publicar-1",
+    articleId: "mapas-estaticos",
+    step: 1,
+    url: "/dashboard/areas-v2",
+    viewport: "desktop",
+    waitFor: "[data-tour='areas-map']",
+    caption: "Publicar zona como mapa estático",
+  },
+  {
+    id: "mapas-visor-1",
+    articleId: "mapas-estaticos",
+    step: 2,
+    url: "/dashboard/maps",
+    viewport: "desktop",
+    waitFor: "main",
+    caption: "Visor de mapas estáticos publicados",
+  },
+
+  // ═══════════════════════════════════════
+  // PLANTILLAS DE SECCIÓN
+  // ═══════════════════════════════════════
+  {
+    id: "plantillas-catalogo-1",
+    articleId: "plantillas-secciones",
+    step: 1,
+    url: "/dashboard/surveys/builder",
+    viewport: "desktop",
+    waitFor: "[data-tour='builder-canvas']",
+    caption: "Catálogo de plantillas de sección",
+  },
+  {
+    id: "plantillas-insertar-1",
+    articleId: "plantillas-secciones",
+    step: 2,
+    url: "/dashboard/surveys/builder",
+    viewport: "desktop",
+    waitFor: "[data-tour='builder-canvas']",
+    caption: "Insertar plantilla en una encuesta",
+  },
+
+  // ═══════════════════════════════════════
   // APP MÓVIL (brigadaApp)
   // ═══════════════════════════════════════
   {
