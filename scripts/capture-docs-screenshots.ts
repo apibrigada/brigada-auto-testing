@@ -6,10 +6,33 @@ import fs from "fs";
 
 dotenv.config();
 
-const BASE_URL = process.env.E2E_CMS_BASE_URL ?? "http://127.0.0.1:3000";
-const EMAIL = process.env.E2E_LOGIN_EMAIL_ROLE_1 ?? process.env.E2E_LOGIN_EMAIL;
-const PASSWORD = process.env.E2E_LOGIN_PASSWORD_ROLE_1 ?? process.env.E2E_LOGIN_PASSWORD;
-const SCREENSHOT_DIR = path.resolve(__dirname, "../../webCMS/public/docs/screenshots");
+const TARGET = process.argv.includes("--target")
+  ? process.argv[process.argv.indexOf("--target") + 1]
+  : "cms";
+
+const BASE_URL =
+  TARGET === "app"
+    ? process.env.E2E_APP_BASE_URL ?? "http://127.0.0.1:8081"
+    : TARGET === "pwa"
+      ? process.env.E2E_PWA_BASE_URL ?? "http://127.0.0.1:3001"
+      : process.env.E2E_CMS_BASE_URL ?? "http://127.0.0.1:3000";
+
+const EMAIL =
+  TARGET === "app" || TARGET === "pwa"
+    ? process.env.E2E_APP_LOGIN_EMAIL ?? process.env.E2E_LOGIN_EMAIL_ROLE_1 ?? process.env.E2E_LOGIN_EMAIL
+    : process.env.E2E_LOGIN_EMAIL_ROLE_1 ?? process.env.E2E_LOGIN_EMAIL;
+
+const PASSWORD =
+  TARGET === "app" || TARGET === "pwa"
+    ? process.env.E2E_APP_LOGIN_PASSWORD ?? process.env.E2E_LOGIN_PASSWORD_ROLE_1 ?? process.env.E2E_LOGIN_PASSWORD
+    : process.env.E2E_LOGIN_PASSWORD_ROLE_1 ?? process.env.E2E_LOGIN_PASSWORD;
+
+const SCREENSHOT_DIR =
+  TARGET === "app"
+    ? path.resolve(__dirname, "../../brigadaApp/ai-context/slides/screenshots")
+    : TARGET === "pwa"
+      ? path.resolve(__dirname, "../../brigadaPWA/ai-context/slides/screenshots")
+      : path.resolve(__dirname, "../../webCMS/public/docs/screenshots");
 
 async function login(page: Page) {
   await page.goto(`${BASE_URL}/login`);
@@ -81,12 +104,19 @@ async function main() {
   const specificArticle = process.argv[2];
   const specificId = process.argv[3];
 
+  const targetPrefix = TARGET === "app" ? "app-" : TARGET === "pwa" ? "pwa-" : "";
+
+  const filteredByTarget = SCREENSHOTS.filter((s) => {
+    if (targetPrefix) return s.id.startsWith(targetPrefix);
+    return !s.id.startsWith("app-") && !s.id.startsWith("pwa-");
+  });
+
   const specs = specificArticle
-    ? SCREENSHOTS.filter((s) => {
+    ? filteredByTarget.filter((s) => {
         if (specificId) return s.id === specificId;
         return s.articleId === specificArticle;
       })
-    : SCREENSHOTS;
+    : filteredByTarget;
 
   if (specs.length === 0) {
     console.log("No screenshots to capture.");
