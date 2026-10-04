@@ -13,7 +13,9 @@ import { chromium, type Browser, type Page } from "playwright";
 import fs from "fs";
 import path from "path";
 
-const CMS_URL = process.env.CMS_URL || "http://localhost:3000";
+const CMS_URL = process.env.E2E_CMS_BASE_URL || process.env.CMS_URL || "http://localhost:3000";
+const EMAIL = process.env.E2E_LOGIN_EMAIL_ROLE_1 ?? process.env.E2E_LOGIN_EMAIL;
+const PASSWORD = process.env.E2E_LOGIN_PASSWORD_ROLE_1 ?? process.env.E2E_LOGIN_PASSWORD;
 const OUTPUT_DIR = path.join(__dirname, "../videos/tours");
 
 interface TourConfig {
@@ -61,9 +63,8 @@ async function captureTourVideo(
     // Navigate to login page first
     await page.goto(`${CMS_URL}/login`, { waitUntil: "networkidle" });
     
-    // Login (you may need to adjust credentials)
-    await page.fill('input[name="email"]', process.env.CMS_EMAIL || "admin@brigada.org");
-    await page.fill('input[name="password"]', process.env.CMS_PASSWORD || "password");
+    await page.fill('input[name="email"]', EMAIL ?? "");
+    await page.fill('input[name="password"]', PASSWORD ?? "");
     await page.click('button[type="submit"]');
     await page.waitForURL("**/dashboard**", { timeout: 10000 });
     
