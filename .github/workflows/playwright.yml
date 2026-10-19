@@ -52,6 +52,14 @@ jobs:
       - name: Run E2E tests
         run: npm run test:e2e
 
+      - name: Ensure report directory exists
+        if: always()
+        run: |
+          mkdir -p playwright-report
+          if [ ! -f playwright-report/index.html ]; then
+            echo '<html><body><h1>Playwright report unavailable</h1><p>No report was generated (tests may have been skipped).</p></body></html>' > playwright-report/index.html
+          fi
+
       - name: Upload Playwright report
         if: always()
         uses: actions/upload-artifact@v4
