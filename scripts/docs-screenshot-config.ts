@@ -256,6 +256,63 @@ export const SCREENSHOTS: ScreenshotSpec[] = [
     waitFor: "[data-tour='campaign-areas']",
     caption: "Mapa de áreas geográficas asignadas a la campaña",
   },
+  {
+    id: "cambiar-encuesta-1",
+    articleId: "cambiar-encuesta-campana",
+    step: 1,
+    url: "/dashboard/campaigns/1",
+    viewport: "desktop",
+    waitFor: "[data-tour='campaign-survey-label']",
+    caption: "Configuración de campaña mostrando la encuesta actual con botón 'Cambiar encuesta'",
+  },
+  {
+    id: "cambiar-encuesta-2",
+    articleId: "cambiar-encuesta-campana",
+    step: 2,
+    url: "/dashboard/campaigns/1",
+    viewport: "desktop",
+    waitFor: "[data-tour='campaign-survey-label']",
+    actions: [
+      { type: "click", selector: "[data-tour='campaign-survey-change-btn']" },
+    ],
+    caption: "Selector de encuesta visible tras hacer clic en 'Cambiar encuesta'",
+  },
+  {
+    id: "cambiar-encuesta-3",
+    articleId: "cambiar-encuesta-campana",
+    step: 3,
+    url: "/dashboard/campaigns/1",
+    viewport: "desktop",
+    waitFor: "[data-tour='campaign-survey-label']",
+    actions: [
+      { type: "click", selector: "[data-tour='campaign-survey-change-btn']" },
+      { type: "wait", selector: "button:has-text('Cancelar')" },
+      { type: "click", selector: "[role='combobox'], button[aria-haspopup]" },
+    ],
+    caption: "Lista desplegable con las encuestas disponibles para seleccionar",
+  },
+
+  // ═══════════════════════════════════════
+  // LISTAS DE DATOS / OPTION SOURCE
+  // ═══════════════════════════════════════
+  {
+    id: "listas-datos-1",
+    articleId: "listas-datos",
+    step: 1,
+    url: "/dashboard/surveys/builder",
+    viewport: "desktop",
+    waitFor: "[data-tour='builder-settings']",
+    caption: "Editor de lista de datos (spreadsheet) en el Survey Builder",
+  },
+  {
+    id: "listas-datos-2",
+    articleId: "listas-datos",
+    step: 2,
+    url: "/dashboard/surveys/builder",
+    viewport: "desktop",
+    waitFor: "[data-tour='builder-settings']",
+    caption: "Selector de fuente de opciones en una pregunta de selección usando lista de datos",
+  },
 
   // ═══════════════════════════════════════
   // ZONAS Y ÁREAS
@@ -775,6 +832,24 @@ export const GIFS: GifSpec[] = [
       { type: "wait", selector: "500" },
     ],
     caption: "Navegación por el sidebar de campañas con hover para peek",
+  },
+
+  // ═══════════════════════════════════════
+  // CAMBIAR ENCUESTA DE CAMPAÑA
+  // ═══════════════════════════════════════
+  {
+    id: "cambiar-encuesta-flow",
+    articleId: "cambiar-encuesta-campana",
+    url: "/dashboard/campaigns/1",
+    viewport: "desktop",
+    durationMs: 8000,
+    actions: [
+      { type: "wait", selector: "[data-tour='campaign-survey-label']" },
+      { type: "click", selector: "[data-tour='campaign-survey-change-btn']" },
+      { type: "wait", selector: "500" },
+      { type: "click", selector: "button:has-text('Cancelar')" },
+    ],
+    caption: "Flujo de cambio de encuesta: ver label, abrir selector, cancelar",
   },
 
   // ═══════════════════════════════════════
